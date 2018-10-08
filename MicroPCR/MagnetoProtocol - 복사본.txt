@@ -1,0 +1,167 @@
+home
+
+ready
+
+
+%proc 1
+
+goto 5
+pumping up 200
+
+goto 4
+pumping down full
+
+goto 10
+pumping up 250
+
+goto 4
+pumping down full
+
+
+% proc 2
+goto 9
+pumping up 250
+
+goto 4
+pumping down full
+
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+
+
+% proc 3  ET
+goto 8
+pumping up 350
+goto 4
+pumping down full
+
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+
+
+% proc 4 BD
+goto 6
+pumping up 230
+goto 4
+pumping down full
+
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+
+
+% proc 5 
+pumping up 500
+
+magnet on
+waiting 2
+
+goto 11
+pumping down full
+
+goto 4
+pumping up 500
+waiting 2
+
+goto 11
+pumping down full
+
+goto 4
+pumping up 300
+waiting 2
+
+goto 11
+pumping down full
+
+% proc 6
+goto 3
+pumping up 500
+
+magnet off
+
+goto 4
+pumping down full
+
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+
+magnet on
+
+waiting 2
+
+pumping up 500
+
+goto 11
+pumping down full
+
+
+% proc 7 
+goto 1
+pumping up 500
+
+magnet off
+
+goto 4
+pumping down full
+
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+pumping up 500
+pumping down full
+
+magnet on
+waiting 2
+
+pumping up 500
+
+goto 11
+pumping down full
+
+% proc 8
+goto 12
+pumping up 50
+
+magnet off
+
+goto 2
+pumping down full
+
+pumping up 50
+pumping down full
+pumping up 50
+pumping down full
+pumping up 50
+pumping down full
+
+magnet on
+pumping up 50
+
+waiting 2
+
+ 
+goto 12
+pumping down full
+
+goto 13
+pumping up 50
+
+goto 5
+%pcr
+home

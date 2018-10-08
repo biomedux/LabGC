@@ -1,0 +1,202 @@
+%(comment) command example
+% home: set up starting point
+% goto 1: go to the position of 1st chamber
+% load: inject the reagent in the current chamber
+% mixing 10: (in the current chabmer) do mixing action ten times 
+% waiting 1200: (in the current chabmer) wait 10 minutes
+% magnet down: (in the current chabmer) go the magnet bar down
+% magnet up: (in the current chabmer) go the magnet bar up
+% waste: discard the needless reagnet in the funnel
+%************************************************************
+
+% User's Protocol
+home
+magnet off
+%ready
+goto 11
+pumping down full
+
+%--- proc 1(lysis) start ---
+goto 6
+% swab + lysis + pk 1050
+pumping sup 900
+
+goto 10
+pumping sdown full
+
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+pumping down full
+pumping up 800
+
+magnet on
+pumping sdown 400
+
+waiting 20
+pumping down full
+
+waiting 120
+
+pumping sup 500
+
+goto 11
+pumping down full
+
+goto 10
+pumping sup 500
+
+goto 11
+pumping down full
+
+
+magnet off
+%--- proc 1 end ----
+
+%--- proc 2(washing 1)start ---
+goto 1
+pumping up 500
+
+goto 10
+pumping down full
+
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+
+magnet on
+waiting 120
+
+pumping sup 700
+goto 11
+pumping down full
+magnet off
+%--- proc 2 end ----
+
+%--- proc 3 (washing 2) start ---
+goto 2
+pumping up 500
+
+goto 10
+pumping down full
+
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+pumping up 700
+pumping down full
+
+magnet on
+waiting 120
+
+pumping sup 700
+
+goto 11
+pumping down full
+
+magnet off
+
+waiting 300
+%--- proc 3 end ---
+
+%--- proc 4(elution) start ---
+goto 5
+pumping up 600
+
+goto 10
+pumping down full
+
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+pumping up 600
+pumping down full
+
+magnet on
+waiting 300
+
+
+pumping sup 500
+
+goto 9
+pumping down full
+pumping sup 150
+
+goto 3
+pumping sdown 85
+
+goto 9
+pumping down full
+
+magnet off
+
+goto 4
+home
+home
