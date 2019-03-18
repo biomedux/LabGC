@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "Magneto.h"
 #include "EziMOTIONPlusR\FAS_EziMOTIONPlusR.h"
-
+#include "FileManager.h"
 
 CMagneto::CMagneto()
 	: connected(false)
@@ -17,8 +17,16 @@ CMagneto::CMagneto()
 	, currentTargetPos(0.0)
 	, currnetPos(0.0)
 	, isTargetTemp(false)
+	, chamberDiskOffset(M_CHAMBER_DISK_OFFSET)
 {
 	initPredefinedAction();
+
+	// 190318 YJ temp code for getting the position data
+	int offset = FileManager::getTempValue();
+
+	if (offset > 0) {
+		chamberDiskOffset = offset;
+	}
 }
 
 CMagneto::~CMagneto(){
@@ -433,10 +441,15 @@ void CMagneto::generateActionList(vector<ActionBeans> &returnValue)
 				
 				if (chamber == 0)		// 홀 테스트용 4번방 잡을때 사용
 					position = -13212;
-				else if (_hallNum < chamber)
-					position = (chamber*M_CHAMBER_INTERVAL)+M_CHAMBER_DIFF+M_CHAMBER_OFFSET - M_CHAMBER_DISK_OFFSET -50 - 32000; //  1->4 으로 갈때 간격 발생으로 보정(하드코딩)
-				else if (_hallNum >= chamber)
-					position = (chamber*M_CHAMBER_INTERVAL) + M_CHAMBER_DIFF + M_CHAMBER_OFFSET - M_CHAMBER_DISK_OFFSET -167 - 32000;
+				else if (_hallNum < chamber) {
+					// 190318 YJ removed
+					// position = (chamber*M_CHAMBER_INTERVAL) + M_CHAMBER_DIFF + M_CHAMBER_OFFSET - M_CHAMBER_DISK_OFFSET - 50 - 32000; //  1->4 으로 갈때 간격 발생으로 보정(하드코딩)
+					position = (chamber*M_CHAMBER_INTERVAL) + M_CHAMBER_DIFF + M_CHAMBER_OFFSET - chamberDiskOffset - 50 - 32000; //  1->4 으로 갈때 간격 발생으로 보정(하드코딩)
+				}
+				else if (_hallNum >= chamber) {
+					// position = (chamber*M_CHAMBER_INTERVAL) + M_CHAMBER_DIFF + M_CHAMBER_OFFSET - M_CHAMBER_DISK_OFFSET - 167 - 32000;
+					position = (chamber*M_CHAMBER_INTERVAL) + M_CHAMBER_DIFF + M_CHAMBER_OFFSET - chamberDiskOffset - 167 - 32000;
+				}
 					
 				_hallNum = chamber;
 				if( chamber == 0)

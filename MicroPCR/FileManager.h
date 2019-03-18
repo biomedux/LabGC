@@ -12,6 +12,9 @@ namespace FileManager
 		PROTOCOL_PATH
 	};
 
+
+	int getTempValue();
+
 	void loadRecentPath(RECENT_TYPE recentType, CString &returnPath);
 	void saveRecentPath(RECENT_TYPE recentType, CString path);
 	bool findFile(CString path, CString fileName);

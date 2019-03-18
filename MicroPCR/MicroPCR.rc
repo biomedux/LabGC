@@ -238,7 +238,7 @@ END
 
 IDD_DIALOG_MAIN DIALOGEX 0, 0, 323, 417
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "LabGenius V2.0(2018.10.08)"
+CAPTION "LabGenius V2.02(2019.03.19)"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Connection",IDC_STATIC,7,7,146,67
@@ -340,8 +340,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 2,0,0,3
+ PRODUCTVERSION 2,0,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -356,14 +356,14 @@ BEGIN
     BEGIN
         BLOCK "041203b5"
         BEGIN
-            VALUE "CompanyName", "TODO: <회사 이름>"
-            VALUE "FileDescription", "TODO: <파일 설명>"
-            VALUE "FileVersion", "1.0.0.1"
+            VALUE "CompanyName", "Biomedux"
+            VALUE "FileDescription", "LabGenius"
+            VALUE "FileVersion", "2.0.0.3"
             VALUE "InternalName", "MicroPCR.exe"
             VALUE "LegalCopyright", "TODO: (c) <회사 이름>.  All rights reserved."
             VALUE "OriginalFilename", "MicroPCR.exe"
             VALUE "ProductName", "TODO: <제품 이름>"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductVersion", "2.0.0.3"
         END
     END
     BLOCK "VarFileInfo"

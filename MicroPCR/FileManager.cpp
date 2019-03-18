@@ -5,6 +5,25 @@
 
 namespace FileManager
 {
+	int getTempValue() {
+		CString path = L"diskOffset.txt";
+
+		CStdioFile file;
+		BOOL res = file.Open(path, CFile::modeRead);
+
+		if (!res) {
+			return -1;
+		}
+
+		CString line;
+		int result = 0;
+		file.ReadString(line);
+		file.Close();
+
+		result = _ttoi(line);
+		return result;
+	}
+
 	void loadRecentPath(RECENT_TYPE recentType, CString &returnPath)
 	{
 		CString recentPath = (recentType == PID_PATH) ? RECENT_PID_PATH : RECENT_PROTOCOL_PATH;

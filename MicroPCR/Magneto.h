@@ -446,6 +446,9 @@ public:
 	int getTotalActionNumber();
 	int getCurrentActionNumber();
 
+	// 190318 YJ for temp value
+	int chamberDiskOffset;
+
 	// siri 151207
 public:
 	bool isTargetTemp;
