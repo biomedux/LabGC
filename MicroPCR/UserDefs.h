@@ -103,6 +103,11 @@ public:
 	CString labelRox;
 	CString labelCY5;
 
+	float ctFam;
+	float ctHex;
+	float ctRox;
+	float ctCY5;
+
 	vector<Action> actionList;
 
 	Protocol()
@@ -111,6 +116,14 @@ public:
 		, useRox(false)
 		, useCY5(false)
 		, protocolName(L"")
+		, labelFam(L"")
+		, labelHex(L"")
+		, labelRox(L"")
+		, labelCY5(L"")
+		, ctFam(38.0)
+		, ctHex(38.0)
+		, ctRox(38.0)
+		, ctCY5(38.0)
 	{
 	}
 };

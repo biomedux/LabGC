@@ -136,6 +136,7 @@
 #define IDC_EDIT_FILTER_ROX_CT          1047
 #define IDC_EDIT_MAGNET_CURRENT         1048
 #define IDC_EDIT_FILTER_CY_CT           1048
+#define IDC_EDIT_FILTER_CY5_CT          1048
 #define IDC_EDIT_LOAD_TARGET            1049
 #define IDC_EDIT_LOAD_CURRENT           1050
 #define IDC_BUTTON_START                1052

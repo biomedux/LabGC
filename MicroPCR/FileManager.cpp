@@ -255,6 +255,7 @@ namespace FileManager
 			CString protocolName;
 			bool useFam, useHex, useRox, useCY5;
 			CString labelFam, labelHex, labelRox, labelCY5;
+			float ctFam, ctHex, ctRox, ctCY5;
 			CString label;
 			double temp, time;
 
@@ -274,6 +275,11 @@ namespace FileManager
 					ar >> protocol.labelHex;
 					ar >> protocol.labelRox;
 					ar >> protocol.labelCY5;
+
+					ar >> protocol.ctFam;
+					ar >> protocol.ctHex;
+					ar >> protocol.ctRox;
+					ar >> protocol.ctCY5;
 
 					ar >> size2;
 
@@ -333,6 +339,11 @@ namespace FileManager
 				ar << protocols[i].labelHex;
 				ar << protocols[i].labelRox;
 				ar << protocols[i].labelCY5;
+
+				ar << protocols[i].ctFam;
+				ar << protocols[i].ctHex;
+				ar << protocols[i].ctRox;
+				ar << protocols[i].ctCY5;
 
 				ar << protocols[i].actionList.size();
 
