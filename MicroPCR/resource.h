@@ -171,6 +171,7 @@
 #define IDC_BUTTON_ADD_PROTOCOL         1089
 #define IDC_BUTTON_PROTOCOL_SAVE        1091
 #define IDC_CUSTOM_PROTOCOL_EDITOR      1092
+#define IDC_EDIT_MAGNETO_PROTOCOL       1094
 
 // Next default values for new objects
 // 
@@ -178,7 +179,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        172
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1094
+#define _APS_NEXT_CONTROL_VALUE         1095
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

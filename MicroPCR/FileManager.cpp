@@ -342,4 +342,76 @@ namespace FileManager
 
 		return res;
 	}
+
+	bool loadMagnetoProtocols(vector<MagnetoProtocol>& magnetoProtocols) {
+		CFile file;
+		bool res = false;
+
+		magnetoProtocols.clear();
+
+		if (file.Open(L"./Magneto.data", CFile::modeRead))
+		{
+			CArchive ar(&file, CArchive::load);
+			int size = 0;
+			CString protocolName, protocolData;
+
+			try {
+				ar >> size;
+
+				for (int i = 0; i < size; ++i) {
+					MagnetoProtocol protocol;
+
+					ar >> protocol.protocolName;
+					ar >> protocol.protocolData;
+
+					magnetoProtocols.push_back(protocol);
+				}
+			}
+			catch (CFileException * e1) {
+				magnetoProtocols.clear();
+				ar.Close();
+				file.Close();
+			}
+			catch (CArchiveException * e2) {
+				magnetoProtocols.clear();
+				ar.Close();
+				file.Close();
+			}
+
+			res = true;
+		}
+
+		return res;
+	}
+
+	bool saveMagnetoProtocols(vector <MagnetoProtocol>& magnetoProtocols) {
+		CFile file;
+		bool res = false;
+
+		file.Open(L"./Magneto.data", CFile::modeCreate | CFile::modeWrite);
+		CArchive ar(&file, CArchive::store);
+
+		int size = magnetoProtocols.size();
+
+		try {
+			ar << size;
+
+			for (int i = 0; i < size; ++i) {
+				ar << magnetoProtocols[i].protocolName;
+				ar << magnetoProtocols[i].protocolData;
+			}
+
+			res = true;
+		}
+		catch (CFileException * e1) {
+			ar.Close();
+			file.Close();
+		}
+		catch (CArchiveException * e2) {
+			ar.Close();
+			file.Close();
+		}
+
+		return res;
+	}
 };

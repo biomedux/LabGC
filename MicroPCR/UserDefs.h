@@ -110,6 +110,24 @@ public:
 	}
 };
 
+class MagnetoProtocol {
+public:
+	CString protocolName;
+	CString protocolData;
+
+	MagnetoProtocol() 
+		: protocolName(L"")
+		, protocolData(L"")
+	{
+	}
+
+	MagnetoProtocol(CString protocolName, CString protocolData)
+		: protocolName(protocolName)
+		, protocolData(protocolData)
+	{
+	}
+};
+
 typedef enum _CMD
 {
 	CMD_READY = 0x00,
