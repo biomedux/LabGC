@@ -138,6 +138,22 @@ CString CMagneto::loadProtocol(CString filePath){
 	return protocolCompile(rawProtocol);
 }
 
+CString CMagneto::loadProtocolFromData(CString protocolData) {
+	CStdioFile file;
+	vector<CString> rawProtocol;
+
+	// CString to vector
+	CString token;
+	int count = 0;
+	int protocolCount = 0;
+	while (AfxExtractSubString(token, protocolData, count, L'\n')) {
+		rawProtocol.push_back(token.MakeLower());
+		count++;
+	}
+
+	return protocolCompile(rawProtocol);
+}
+
 /**
 		GO = 0,
 		FILTER = 1,

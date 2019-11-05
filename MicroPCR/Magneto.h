@@ -202,6 +202,111 @@ namespace Magneto{
 #define M_PUMPING_STEP_PER_REV	(int)160// 1/100 emulation
 #endif
 
+	// Protocol check function
+	/*
+	CString checkProtocol(CString& protocol) {
+		vector<CString> convertedProtocol;
+
+		// CString to vector
+		CString token;
+		int count = 0;
+		while (AfxExtractSubString(token, protocol, count, L'\n')) {
+			convertedProtocol.push_back(token);
+			count++;
+			AfxMessageBox(token);
+		}
+
+		CString compileMessage = L"=====Compile Error=====\n";
+		// cmd list 를 만들어 command 와 mapping 시킨다.
+		static const CString tempCmdList[14] = { L"goto", L"filter", L"mixing", L"waiting", L"pumping up", L"pumping sup", L"pumping down", L"pumping sdown", L"ready", L"home", L"magnet on", L"magnet off", L"heating", L"pcr", };
+
+		// 비정상적인 파일임을 알림
+		if (convertedProtocol.size() == 0)
+			return L"Compile Error: 비정상인 파일입니다.";
+
+		// 모든 Protocol line 을 읽는다.
+		for (int i = 0; i < convertedProtocol.size(); ++i)
+		{
+			int offset = 0;
+			CString line = convertedProtocol[i].Trim();
+			CString cmd = line.Tokenize(L" ", offset).Trim();
+
+			if( cmd.Compare(L"pumping") == 0 )
+			{
+				CString subCmd = line.Tokenize(L" ", offset).Trim();
+
+			
+				if (subCmd.Compare(L"up") == 0 || subCmd.Compare(L"sup") == 0 || subCmd.Compare(L"down") == 0 || subCmd.Compare(L"sdown") == 0) // 기존 if( subCmd.Compare(L"up") == 0 || subCmd.Compare(L"down") == 0 ) 170106_2 KSY 
+					cmd += L" " + subCmd;
+				else
+				{
+					compileMessage.Format(L"%s\nLine %d : Invalid argument value", compileMessage, i+1);
+					continue;
+				}
+			}
+		
+			// Command 가 없는 경우와 주석 문자가 처음 시작되는 경우 무시
+			if (cmd.IsEmpty())
+				continue;
+		
+			else if (cmd.GetAt(0) == '%')
+				continue;
+		
+			// 값을 저장할 구조체 초기화
+			ProtocolBinary bin = { -1, -1 };
+
+			for (int j = 0; j < ProtocolCmd::MAX+1; ++j)
+			{
+				// 커맨드에 매개변수(args) 가 없는 경우 처리
+				// 아래 명시된 프로토콜 커맨드는 매개변수가 없다.
+				if ( (j == ProtocolCmd::MAGNET_ON) || (j == ProtocolCmd::MAGNET_OFF) || (j == ProtocolCmd::PCR) ||
+						(j == ProtocolCmd::HOME) || (j == ProtocolCmd::READY) )
+				{
+					if (line.Compare(tempCmdList[j]) == 0)
+						bin.cmd = j;
+				}
+
+				// 커맨드 매개변수(args) 가 있는 경우 처리
+				// pumping 은 위에서 처리,
+				// GO, FILTER, MIX, WAIT, HEATING 에 대해 처리한다.
+				else if (cmd.Compare(tempCmdList[j]) == 0)
+				{
+					bin.cmd = j;
+
+					CString arg = line.Tokenize(L" ", offset);
+
+					// arg 값이 있는지 체크
+					if (arg.Compare(L"") != 0)
+					{
+						if( arg.Compare(L"full") == 0 )
+							bin.arg = -1;
+						else
+							bin.arg = _ttoi(arg);
+					}
+
+					// 없는 경우 에러 메시지 추가
+					else
+					{
+						compileMessage.Format(L"%s\nLine %d : Invalid argument value", compileMessage, i+1);
+					}
+				
+					break;
+				}
+			}
+
+			if (bin.cmd == -1)
+				compileMessage.Format(L"%s\nLine %d : Invalid command value", compileMessage, i + 1);
+		}
+
+		// Compile error message 가 변경되지 않은 경우 성공한 경우
+		if (compileMessage.Compare(L"=====Compile Error=====\n") == 0)
+		{
+			return Magneto::CompileMessageOk;
+		}
+
+		return compileMessage;
+	}
+	*/
 };
 
 namespace DriverStatus{
@@ -410,6 +515,7 @@ public:
 	/** File Management				***************/
 public:
 	CString loadProtocol(CString filePath);
+	CString loadProtocolFromData(CString protocolData);
 	bool isCompileSuccess(CString res);
 	void generateActionList(vector<ActionBeans> &returnValue);
 

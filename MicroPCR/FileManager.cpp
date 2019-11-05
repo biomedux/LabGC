@@ -254,6 +254,7 @@ namespace FileManager
 			int size = 0, size2 = 0;
 			CString protocolName;
 			bool useFam, useHex, useRox, useCY5;
+			CString labelFam, labelHex, labelRox, labelCY5;
 			CString label;
 			double temp, time;
 
@@ -268,6 +269,11 @@ namespace FileManager
 					ar >> protocol.useHex;
 					ar >> protocol.useRox;
 					ar >> protocol.useCY5;
+
+					ar >> protocol.labelFam;
+					ar >> protocol.labelHex;
+					ar >> protocol.labelRox;
+					ar >> protocol.labelCY5;
 
 					ar >> size2;
 
@@ -321,6 +327,12 @@ namespace FileManager
 				ar << protocols[i].useHex;
 				ar << protocols[i].useRox;
 				ar << protocols[i].useCY5;
+
+				// save the filter labels
+				ar << protocols[i].labelFam;
+				ar << protocols[i].labelHex;
+				ar << protocols[i].labelRox;
+				ar << protocols[i].labelCY5;
 
 				ar << protocols[i].actionList.size();
 
@@ -382,6 +394,50 @@ namespace FileManager
 		}
 
 		return res;
+	}
+
+	MagnetoProtocol loadMagnetoProtocol(CString& protocolName) {
+		CFile file;
+		bool res = false;
+		MagnetoProtocol protocol;
+
+		if (file.Open(L"./Magneto.data", CFile::modeRead))
+		{
+			CArchive ar(&file, CArchive::load);
+			int size = 0;
+
+			try {
+				ar >> size;
+
+				for (int i = 0; i < size; ++i) {
+					ar >> protocol.protocolName;
+					ar >> protocol.protocolData;
+
+					// Found the same protocol.
+					if (protocol.protocolName.Compare(protocolName) == 0) {
+						res = true;
+						break;
+					}
+				}
+			}
+			catch (CFileException * e1) {
+				ar.Close();
+				file.Close();
+			}
+			catch (CArchiveException * e2) {
+				ar.Close();
+				file.Close();
+			}
+
+		}
+
+		if (!res) {
+			protocol.protocolName = L"";
+			protocol.protocolData = L"";
+		}
+
+		// if can't find the protocolName, just return empty protocol
+		return protocol;
 	}
 
 	bool saveMagnetoProtocols(vector <MagnetoProtocol>& magnetoProtocols) {

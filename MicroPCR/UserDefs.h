@@ -98,6 +98,11 @@ public:
 	bool useRox;
 	bool useCY5;
 
+	CString labelFam;
+	CString labelHex;
+	CString labelRox;
+	CString labelCY5;
+
 	vector<Action> actionList;
 
 	Protocol()
