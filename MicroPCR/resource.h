@@ -135,7 +135,6 @@
 #define IDC_EDIT_MAGNET_TARGET          1047
 #define IDC_EDIT_FILTER_ROX_CT          1047
 #define IDC_EDIT_MAGNET_CURRENT         1048
-#define IDC_EDIT_FILTER_CY_CT           1048
 #define IDC_EDIT_FILTER_CY5_CT          1048
 #define IDC_EDIT_LOAD_TARGET            1049
 #define IDC_EDIT_LOAD_CURRENT           1050
@@ -178,9 +177,12 @@
 #define IDC_CUSTOM_PID_SETUP_TABLE      1087
 #define IDC_LIST_PROTOCOL               1088
 #define IDC_BUTTON_ADD_PROTOCOL         1089
+#define IDC_CUSTOM_PID_SETUP_TABLE2     1090
+#define IDC_CUSTOM_TEST_HISTORY_TABLE   1090
 #define IDC_BUTTON_PROTOCOL_SAVE        1091
 #define IDC_CUSTOM_PROTOCOL_EDITOR      1092
 #define IDC_EDIT_MAGNETO_PROTOCOL       1094
+#define IDC_CUSTOM_RESULT_TABLE         1101
 
 // Next default values for new objects
 // 
@@ -188,7 +190,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        172
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1095
+#define _APS_NEXT_CONTROL_VALUE         1102
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

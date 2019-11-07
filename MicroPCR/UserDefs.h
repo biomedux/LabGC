@@ -31,10 +31,14 @@ using namespace std;
 #define PID_CONSTANTS_MAX		5
 
 static const CString PID_TABLE_COLUMNS[5] = { L"Start Temp", L"Target Temp", L"Kp", L"Kd", L"Ki" };
+static const CString RESULT_TABLE_COLUMNS[2] = { L"Target", L"Result" };
 static const CString PROTOCOL_TABLE_COLUMNS[3] = { L"No", L"Temp", L"Time"};
 
 // MAX Protocol Name
 #define MAX_PROTOCOL_LENGTH		50
+
+
+// #define USE_CHART
 
 
 // 현재 이 값을 사용을 하고 있지만, 기기로부터 저장된 값이 받아오게 되면
