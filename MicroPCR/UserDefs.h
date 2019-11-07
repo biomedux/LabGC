@@ -32,6 +32,7 @@ using namespace std;
 
 static const CString PID_TABLE_COLUMNS[5] = { L"Start Temp", L"Target Temp", L"Kp", L"Kd", L"Ki" };
 static const CString RESULT_TABLE_COLUMNS[2] = { L"Target", L"Result" };
+static const CString HISTORY_TABLE_COLUMNS[5] = { L"Date Time", L"Target", L"Filter", L"CT Value", L"Result" };
 static const CString PROTOCOL_TABLE_COLUMNS[3] = { L"No", L"Temp", L"Time"};
 
 // MAX Protocol Name
@@ -39,6 +40,12 @@ static const CString PROTOCOL_TABLE_COLUMNS[3] = { L"No", L"Temp", L"Time"};
 
 
 // #define USE_CHART
+
+// Database 버전
+#define VERSION_CONSTANTS	L"V1"
+#define VERSION_HISTORY		L"V1"
+#define VERSION_PROTOCOL	L"V1"
+#define VERSION_MAGNETO		L"V1"
 
 
 // 현재 이 값을 사용을 하고 있지만, 기기로부터 저장된 값이 받아오게 되면
@@ -146,6 +153,33 @@ public:
 	MagnetoProtocol(CString protocolName, CString protocolData)
 		: protocolName(protocolName)
 		, protocolData(protocolData)
+	{
+	}
+};
+
+class History {
+public:
+	CString date;
+	CString target;
+	CString filter;
+	CString ctValue;
+	CString result;
+
+	History() 
+		: date(L"")
+		, target(L"")
+		, filter(L"")
+		, ctValue(L"")
+		, result(L"")
+	{
+	}
+
+	History(CString date, CString target, CString filter, CString ctValue, CString result)
+		: date(date)
+		, target(target)
+		, filter(filter)
+		, ctValue(ctValue)
+		, result(result)
 	{
 	}
 };

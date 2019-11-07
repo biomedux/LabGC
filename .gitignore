@@ -34,4 +34,5 @@
 # .vs files
 .vs/
 Debug/
-
+Release/
+Record/

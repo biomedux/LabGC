@@ -35,5 +35,8 @@ namespace FileManager
 	MagnetoProtocol loadMagnetoProtocol(CString& protocolName);
 	bool saveMagnetoProtocols(vector <MagnetoProtocol> &magnetoProtocols);
 
+	bool loadHistory(vector<History> & historyList);
+	bool saveHistory(vector<History>& historyList);
+
 	void log(CString msg);
 };

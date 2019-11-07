@@ -181,15 +181,22 @@ namespace FileManager
 			CArchive ar(&file, CArchive::load);
 			float startTemp = 0, targetTemp = 0, kp = 0, ki = 0, kd = 0;
 			int size = 0;
+			CString version;
 
 			try {
-				ar >> maxCycle >> compensation >> integralMax >> displayDelta >> flRelativeMax;
-				ar >> size;
+				ar >> version;
 
-				for (int i = 0; i < size; ++i) {
-					ar >> startTemp >> targetTemp >> kp >> kd >> ki;
+				if (!version.IsEmpty() && version.GetAt(0) == 'V') {
+					ar >> maxCycle >> compensation >> integralMax >> displayDelta >> flRelativeMax;
+					ar >> size;
 
-					pids.push_back(PID(startTemp, targetTemp, kp, ki, kd));
+					for (int i = 0; i < size; ++i) {
+						ar >> startTemp >> targetTemp >> kp >> kd >> ki;
+
+						pids.push_back(PID(startTemp, targetTemp, kp, ki, kd));
+					}
+
+					res = true;
 				}
 			}
 			catch (CFileException *e1) {
@@ -200,8 +207,6 @@ namespace FileManager
 				ar.Close();
 				file.Close();
 			}
-
-			res = true;
 		}
 
 		return res;
@@ -214,8 +219,10 @@ namespace FileManager
 
 		file.Open(L"./Labgenius.data", CFile::modeCreate | CFile::modeWrite);
 		CArchive ar(&file, CArchive::store);
+		CString version = VERSION_CONSTANTS;
 
 		try {
+			ar << version;
 			ar << maxCycle << compensation << integralMax << displayDelta << flRelativeMax;
 
 			int size = pids.size();
@@ -258,43 +265,49 @@ namespace FileManager
 			float ctFam, ctHex, ctRox, ctCY5;
 			CString label;
 			double temp, time;
+			CString version;
 
 			try {
-				ar >> size;
+				ar >> version;
 
-				for (int i = 0; i < size; ++i) {
-					Protocol protocol;
+				if (!version.IsEmpty() && version.GetAt(0) == 'V') {
+					ar >> size;
 
-					ar >> protocol.protocolName;
-					ar >> protocol.useFam;
-					ar >> protocol.useHex;
-					ar >> protocol.useRox;
-					ar >> protocol.useCY5;
+					for (int i = 0; i < size; ++i) {
+						Protocol protocol;
 
-					ar >> protocol.labelFam;
-					ar >> protocol.labelHex;
-					ar >> protocol.labelRox;
-					ar >> protocol.labelCY5;
+						ar >> protocol.protocolName;
+						ar >> protocol.useFam;
+						ar >> protocol.useHex;
+						ar >> protocol.useRox;
+						ar >> protocol.useCY5;
 
-					ar >> protocol.ctFam;
-					ar >> protocol.ctHex;
-					ar >> protocol.ctRox;
-					ar >> protocol.ctCY5;
+						ar >> protocol.labelFam;
+						ar >> protocol.labelHex;
+						ar >> protocol.labelRox;
+						ar >> protocol.labelCY5;
 
-					ar >> size2;
+						ar >> protocol.ctFam;
+						ar >> protocol.ctHex;
+						ar >> protocol.ctRox;
+						ar >> protocol.ctCY5;
 
-					for (int j = 0; j < size2; ++j) {
-						ar >> label >> temp >> time;
-						
-						Action action;
-						action.Label = label;
-						action.Temp = temp;
-						action.Time = time;
+						ar >> size2;
 
-						protocol.actionList.push_back(action);
+						for (int j = 0; j < size2; ++j) {
+							ar >> label >> temp >> time;
+
+							Action action;
+							action.Label = label;
+							action.Temp = temp;
+							action.Time = time;
+
+							protocol.actionList.push_back(action);
+						}
+
+						protocols.push_back(protocol);
+						res = true;
 					}
-
-					protocols.push_back(protocol);
 				}
 			}
 			catch (CFileException *e1) {
@@ -307,8 +320,6 @@ namespace FileManager
 				ar.Close();
 				file.Close();
 			}
-
-			res = true;
 		}
 
 		return res;
@@ -324,7 +335,10 @@ namespace FileManager
 
 		int size = protocols.size();
 
+		CString version = VERSION_PROTOCOL;
+
 		try {
+			ar << version;
 			ar << size;
 
 			for (int i = 0; i < size; ++i) {
@@ -375,19 +389,25 @@ namespace FileManager
 		if (file.Open(L"./Magneto.data", CFile::modeRead))
 		{
 			CArchive ar(&file, CArchive::load);
+			CString version;
 			int size = 0;
-			CString protocolName, protocolData;
 
 			try {
-				ar >> size;
+				ar >> version;
 
-				for (int i = 0; i < size; ++i) {
-					MagnetoProtocol protocol;
+				if (!version.IsEmpty() && version.GetAt(0) == 'V') {
+					ar >> size;
 
-					ar >> protocol.protocolName;
-					ar >> protocol.protocolData;
+					for (int i = 0; i < size; ++i) {
+						MagnetoProtocol protocol;
 
-					magnetoProtocols.push_back(protocol);
+						ar >> protocol.protocolName;
+						ar >> protocol.protocolData;
+
+						magnetoProtocols.push_back(protocol);
+
+						res = true;
+					}
 				}
 			}
 			catch (CFileException * e1) {
@@ -400,8 +420,6 @@ namespace FileManager
 				ar.Close();
 				file.Close();
 			}
-
-			res = true;
 		}
 
 		return res;
@@ -415,19 +433,24 @@ namespace FileManager
 		if (file.Open(L"./Magneto.data", CFile::modeRead))
 		{
 			CArchive ar(&file, CArchive::load);
+			CString version;
 			int size = 0;
 
 			try {
-				ar >> size;
+				ar >> version;
+				
+				if (!version.IsEmpty() && version.GetAt(0) == 'V') {
+					ar >> size;
 
-				for (int i = 0; i < size; ++i) {
-					ar >> protocol.protocolName;
-					ar >> protocol.protocolData;
+					for (int i = 0; i < size; ++i) {
+						ar >> protocol.protocolName;
+						ar >> protocol.protocolData;
 
-					// Found the same protocol.
-					if (protocol.protocolName.Compare(protocolName) == 0) {
-						res = true;
-						break;
+						// Found the same protocol.
+						if (protocol.protocolName.Compare(protocolName) == 0) {
+							res = true;
+							break;
+						}
 					}
 				}
 			}
@@ -439,7 +462,6 @@ namespace FileManager
 				ar.Close();
 				file.Close();
 			}
-
 		}
 
 		if (!res) {
@@ -459,13 +481,101 @@ namespace FileManager
 		CArchive ar(&file, CArchive::store);
 
 		int size = magnetoProtocols.size();
+		CString version = VERSION_MAGNETO;
 
 		try {
+			ar << version;
 			ar << size;
 
 			for (int i = 0; i < size; ++i) {
 				ar << magnetoProtocols[i].protocolName;
 				ar << magnetoProtocols[i].protocolData;
+			}
+
+			res = true;
+		}
+		catch (CFileException * e1) {
+			ar.Close();
+			file.Close();
+		}
+		catch (CArchiveException * e2) {
+			ar.Close();
+			file.Close();
+		}
+
+		return res;
+	}
+
+	bool loadHistory(vector<History>& historyList) {
+		CFile file;
+		bool res = false;
+
+		historyList.clear();
+
+		if (file.Open(L"./History.data", CFile::modeRead))
+		{
+			CArchive ar(&file, CArchive::load);
+			CString version;
+			int size = 0;
+
+			try {
+				ar >> version;
+
+				if (!version.IsEmpty() && version.GetAt(0) == 'V') {
+					ar >> size;
+
+					for (int i = 0; i < size; ++i) {
+						// version 에 따른 다른 구현 필요 추후 업데이트 시.
+
+						History history;
+
+						ar >> history.date;
+						ar >> history.target;
+						ar >> history.filter;
+						ar >> history.ctValue;
+						ar >> history.result;
+
+						historyList.push_back(history);
+					}
+				}
+			}
+			catch (CFileException * e1) {
+				historyList.clear();
+				ar.Close();
+				file.Close();
+			}
+			catch (CArchiveException * e2) {
+				historyList.clear();
+				ar.Close();
+				file.Close();
+			}
+
+			res = true;
+		}
+
+		return res;
+	}
+
+	bool saveHistory(vector<History>& historyList) {
+		CFile file;
+		bool res = false;
+
+		file.Open(L"./History.data", CFile::modeCreate | CFile::modeWrite);
+		CArchive ar(&file, CArchive::store);
+
+		int size = historyList.size();
+		CString version = VERSION_HISTORY;
+
+		try {
+			ar << version;
+			ar << size;
+
+			for (int i = 0; i < size; ++i) {
+				ar << historyList[i].date;
+				ar << historyList[i].target;
+				ar << historyList[i].filter;
+				ar << historyList[i].ctValue;
+				ar << historyList[i].result;
 			}
 
 			res = true;

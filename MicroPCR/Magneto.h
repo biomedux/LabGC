@@ -1,6 +1,6 @@
 #pragma once
 
-#define EMULATOR  //KJD
+// #define EMULATOR  //KJD
 
 #ifdef EMULATOR  //KJD
 #define MAX_DRIVER_NUM 1
