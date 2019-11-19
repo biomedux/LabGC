@@ -154,6 +154,12 @@ CString CMagneto::loadProtocolFromData(CString protocolData) {
 	return protocolCompile(rawProtocol);
 }
 
+CString CMagneto::loadHomeProtocol() {
+	vector<CString> rawProtocol;
+	rawProtocol.push_back(L"home");
+	return protocolCompile(rawProtocol);
+}
+
 /**
 		GO = 0,
 		FILTER = 1,
@@ -598,11 +604,12 @@ bool CMagneto::isActionFinished()
 
 	// axis 상태를 받아온다.
 	EZISTEP_MINI_AXISSTATUS axisStatus;
-	/* // 디버그 찍는것
+	/*
 	CString out;
 	out.Format(L"%d %d\n", ab.cmd, ab.args[0]);
 	::OutputDebugString(out);
 	*/
+	
 	if( !( (ab.cmd == ActionCmd::PCR) || (ab.cmd == ActionCmd::MAGNET_ON) || (ab.cmd == ActionCmd::HEATING) 
 		|| (ab.cmd == ActionCmd::MAGNET_OFF) || (ab.cmd == ActionCmd::SECOND_WAIT) || (ab.cmd == ActionCmd::WAIT) ) )
 	{

@@ -26,7 +26,9 @@ namespace Magneto{
 	const static CString CompileMessageOk = L"Compile Success";
 
 	const static int TimerRuntaskID = 0x01;
+	const static int TimerCleanupTaskID = 0x02;
 	const static int TimerRuntaskDuration = 200;
+	const static int TimerCleanupTaskDuration = 200;
 
 	// Motor 좌표 관련 값들
 	// 드라이버 배치
@@ -514,6 +516,7 @@ public:
 
 	/** File Management				***************/
 public:
+	CString loadHomeProtocol();
 	CString loadProtocol(CString filePath);
 	CString loadProtocolFromData(CString protocolData);
 	bool isCompileSuccess(CString res);
