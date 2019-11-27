@@ -1,6 +1,6 @@
 #pragma once
 
-// #define EMULATOR  //KJD
+#define EMULATOR  //KJD
 
 #ifdef EMULATOR  //KJD
 #define MAX_DRIVER_NUM 1
@@ -508,6 +508,7 @@ public:
 	/** Connection					***************/
 public:
 	void searchPort(vector<CString> &portList);
+	void searchPortByReg(vector<CString>& portList);
 
 	DriverStatus::Enum connect(int comPortNo);
 	void disconnect();
@@ -574,4 +575,5 @@ public:
 	void CMagneto::runFilterAction(int absPos);
 
 	long getSerialNumber();
+	bool setSerialNumber(long serialNumber);
 };

@@ -116,6 +116,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DeviceSetup.cpp" />
     <ClCompile Include="CMainDialog.cpp" />
     <ClCompile Include="CommThread.cpp" />
     <ClCompile Include="ConvertTool.cpp" />
@@ -159,6 +160,7 @@
     <ClCompile Include="GraphControl\GraphCtrl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DeviceSetup.h" />
     <ClInclude Include="CMainDialog.h" />
     <ClInclude Include="CommThread.h" />
     <ClInclude Include="ConvertTool.h" />

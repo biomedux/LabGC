@@ -23,6 +23,7 @@
 #define IDD_DIALOG_SETUP                166
 #define IDD_DIALOG_PROTOCOL_EDITOR      168
 #define IDD_DIALOG_PASSWORD             170
+#define IDD_DIALOG_DEVICE_SETUP         172
 #define IDC_EDIT_DEVICE_STATUS          1000
 #define IDC_EDIT_PCR_STATUS             1000
 #define IDC_EDIT_CHAMBER_TEMP           1001
@@ -111,7 +112,9 @@
 #define IDC_EDIT_CONNECTI_STATUS        1036
 #define IDC_EDIT_MAX_CYCLES             1036
 #define IDC_EDIT_PROTOCOL_NAME          1036
+#define IDC_EDIT_PCR_SERIAL_NUMBER      1036
 #define IDC_STATIC_SAVE_LABEL           1037
+#define IDC_EDIT_MAGNETO_SERIAL_NUMBER  1037
 #define IDC_CHECK_TEMP_GRAPH            1039
 #define IDC_EDIT_DISPLAY_DELTA          1039
 #define IDC_EDIT_COMPENSATION           1040
@@ -163,11 +166,14 @@
 #define IDC_BUTTON2                     1080
 #define IDC_BTN_FLTTEST                 1080
 #define IDC_BUTTON_CONNECT              1080
+#define IDC_BUTTON_MAKE_HEX_FILE        1080
 #define IDC_RADIO1                      1081
 #define IDC_BUTTON_EDIT_PROTOCOL        1081
 #define IDC_RADIO_PROTOCOL_LABEL        1081
+#define IDC_BUTTON_RESET_DEVICE         1081
 #define IDC_COMBO_DEVICE_LIST           1082
 #define IDC_BUTTON_PROTOCOL_CANCEL      1082
+#define IDC_BUTTON_SET_MAGNETO_SERIAL   1082
 #define IDC_STATIC_PROGRESS_STATUS      1083
 #define IDC_RADIO_PROTOCOL_GOTO         1083
 #define IDC_RADIO_PROTOCOL_SHOT         1084
@@ -183,14 +189,16 @@
 #define IDC_CUSTOM_PROTOCOL_EDITOR      1092
 #define IDC_EDIT_MAGNETO_PROTOCOL       1094
 #define IDC_CUSTOM_RESULT_TABLE         1101
+#define IDC_COMBO_RESET_DEVICES         1103
+#define IDC_COMBO_RESET_DEVICES2        1104
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        172
+#define _APS_NEXT_RESOURCE_VALUE        174
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1102
+#define _APS_NEXT_CONTROL_VALUE         1104
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

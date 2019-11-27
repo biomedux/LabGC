@@ -4,6 +4,10 @@
 #include "EziMOTIONPlusR\FAS_EziMOTIONPlusR.h"
 #include "FileManager.h"
 
+#include "setupapi.h"
+
+#pragma comment (lib, "setupapi.lib")
+
 CMagneto::CMagneto()
 	: connected(false)
 	, comPortNo(-1)
@@ -51,13 +55,88 @@ void CMagneto::searchPort(vector<CString> &portList)
 		COMMPROP pProp;
 		GetCommProperties(hComm, &pProp);
 
-		if (hComm != INVALID_HANDLE_VALUE && pProp.dwProvSubType == PST_RS232 )
+		// dwSettableBaud : 268856176 or dwSettableData : 12 
+		if (hComm != INVALID_HANDLE_VALUE && pProp.dwProvSubType == PST_RS232)
 		{
 			portName.Format(L"COM%d", i + 1);
 			portList.push_back(portName);
 		}
 
 		CloseHandle(hComm);
+	}
+}
+
+void CMagneto::searchPortByReg(vector<CString>& portList) {
+	HDEVINFO hDevInfo = 0;
+	SP_DEVINFO_DATA spDevInfoData = { 0 };
+
+	hDevInfo = SetupDiGetClassDevs(0L, 0L, hwnd, DIGCF_PRESENT | DIGCF_ALLCLASSES | DIGCF_PROFILE);
+
+	if (hDevInfo == (void*)-1) {
+		return;
+	}
+
+	short wIndex = 0;
+	spDevInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
+
+	while (true) {
+		if (SetupDiEnumDeviceInfo(hDevInfo, wIndex, &spDevInfoData)) {
+			TCHAR szBuf[MAX_PATH] = { 0 };
+			short wImageIdx = 0;
+			short wItem = 0;
+
+			if (!SetupDiGetDeviceRegistryProperty(hDevInfo, &spDevInfoData, SPDRP_CLASS, 0L, (PBYTE)szBuf, 2048, 0)) {
+				wIndex++;
+				continue;
+			}
+
+			if (_tcscmp(szBuf, L"Ports") == 0) {
+				TCHAR szName[64] = { 0 };
+				TCHAR szID[LINE_LEN] = { 0 };
+				TCHAR szPath[MAX_PATH] = { 0 };
+				DWORD dwRequireSize;
+
+				if (!SetupDiGetClassDescription(&spDevInfoData.ClassGuid, szBuf, MAX_PATH, &dwRequireSize)) {
+					wIndex++;
+					continue;
+				}
+
+				if (!SetupDiGetDeviceInstanceId(hDevInfo, &spDevInfoData, szID, LINE_LEN, 0)) {
+					wIndex++;
+					continue;
+				}
+
+				BOOL res = SetupDiGetDeviceRegistryProperty(hDevInfo, &spDevInfoData, SPDRP_FRIENDLYNAME, 0, (PBYTE)szName, 63, 0);
+
+				if (!res) {	// second try
+					res = SetupDiGetDeviceRegistryProperty(hDevInfo, &spDevInfoData, SPDRP_DEVICEDESC, 0, (PBYTE)szName, 63, 0);
+
+					if (!res) {
+						wIndex++;
+						continue;
+					}
+				}
+
+				CString deviceName;
+				deviceName.Format(L"%s", szName);
+
+				int startIdx = -1, endIdx = -1;
+
+				startIdx = deviceName.Find(L"(COM");
+				endIdx = deviceName.Find(L")");
+
+				// Check the COM Port & COM port name
+				if (startIdx != -1 && endIdx != -1 && deviceName.Find(L"USB Serial Port") != -1) {
+					CString devicePort = deviceName.Mid(startIdx + 4, endIdx - startIdx - 1);
+					portList.push_back(devicePort);
+				}
+			}
+		}
+		else {
+			break;
+		}
+
+		wIndex++;
 	}
 }
 
@@ -104,6 +183,15 @@ long CMagneto::getSerialNumber() {
 		return 0;
 	else
 		return serialNumber - 134000000;
+}
+
+bool CMagneto::setSerialNumber(long serialNumber) {
+	serialNumber += 134000000;
+	
+	if (FAS_SetParameter(comPortNo, 0, 12, serialNumber) != FMM_OK)
+		return true;
+	else
+		return false;
 }
 
 bool CMagneto::isCompileSuccess(CString res){

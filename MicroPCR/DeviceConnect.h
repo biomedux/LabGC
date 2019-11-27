@@ -25,6 +25,7 @@ public:
 	BOOL OpenDevice(int Vid = LS4550EK_VID, int Pid = LS4550EK_PID, char* Serial = NULL, BOOL IsBlock = TRUE);
 	// Check Devices & return Device Counts
 	int GetDevices(int Vid = LS4550EK_VID, int Pid = LS4550EK_PID, int Max = DEVICE_MAX);
+
 	// If ConnectDevice Events actived, Called this function
 	BOOL CheckDevice(void);
 	void CloseDevice(void);

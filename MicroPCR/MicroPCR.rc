@@ -333,6 +333,27 @@ BEGIN
     PUSHBUTTON      "Cancel",IDC_BUTTON_PASSWORD_CANCEL,94,47,50,14
 END
 
+IDD_DIALOG_DEVICE_SETUP DIALOGEX 0, 0, 309, 203
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Device Serial Setup & Make firmware file(v2.5)"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Magneto Setup",IDC_STATIC,7,7,287,79
+    GROUPBOX        "PCR Setup",IDC_STATIC,7,92,287,104
+    EDITTEXT        IDC_EDIT_PCR_SERIAL_NUMBER,115,108,77,14,ES_AUTOHSCROLL
+    LTEXT           "입력할 Serial Number : ",IDC_STATIC,35,110,76,8
+    PUSHBUTTON      "Hex 파일 생성",IDC_BUTTON_MAKE_HEX_FILE,203,107,66,14
+    LTEXT           "Reset 시킬 장비 선택 : ",IDC_STATIC,35,130,76,8
+    COMBOBOX        IDC_COMBO_RESET_DEVICES,116,127,77,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Reset",IDC_BUTTON_RESET_DEVICE,203,126,66,14
+    LTEXT           "* 주의사항 : 입력할 Serial number 범위는 000000~999999 입니다.\n 생성된 hex 파일을 아래의 Reset 기능을 이용하여 업로드하세요.\n\n Reset 기능의 경우 idle 상태의 장비에만 사용하시길 바랍니다.\n 업로드는 별도의 Boot loader 프로그램을 이용하세요.",IDC_STATIC,16,151,270,42
+    LTEXT           "입력할 Serial Number : ",IDC_STATIC,35,51,76,8
+    EDITTEXT        IDC_EDIT_MAGNETO_SERIAL_NUMBER,115,49,77,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Hex 파일 생성",IDC_BUTTON_SET_MAGNETO_SERIAL,203,22,66,14
+    LTEXT           "변경할 장비 COM Port : ",IDC_STATIC,32,29,79,8
+    COMBOBOX        IDC_COMBO_RESET_DEVICES2,115,28,77,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -476,6 +497,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 70
     END
+
+    IDD_DIALOG_DEVICE_SETUP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 196
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -526,6 +555,11 @@ BEGIN
 END
 
 IDD_DIALOG_PASSWORD AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_DEVICE_SETUP AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
