@@ -461,5 +461,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="Firmware.txt" />
   </ItemGroup>
 </Project>

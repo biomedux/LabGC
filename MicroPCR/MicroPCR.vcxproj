@@ -267,6 +267,7 @@
     <None Include="res\MicroPCR.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="Firmware.txt" />
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -24,13 +24,6 @@ CMagneto::CMagneto()
 	, chamberDiskOffset(M_CHAMBER_DISK_OFFSET)
 {
 	initPredefinedAction();
-
-	// 190318 YJ temp code for getting the position data
-	int offset = FileManager::getTempValue();
-
-	if (offset > 0) {
-		chamberDiskOffset = offset;
-	}
 }
 
 CMagneto::~CMagneto(){
@@ -127,7 +120,9 @@ void CMagneto::searchPortByReg(vector<CString>& portList) {
 
 				// Check the COM Port & COM port name
 				if (startIdx != -1 && endIdx != -1 && deviceName.Find(L"USB Serial Port") != -1) {
-					CString devicePort = deviceName.Mid(startIdx + 4, endIdx - startIdx - 1);
+					CString devicePort = deviceName.Mid(startIdx);
+					devicePort.Replace(L"(", L"");
+					devicePort.Replace(L")", L"");
 					portList.push_back(devicePort);
 				}
 			}
@@ -187,10 +182,14 @@ long CMagneto::getSerialNumber() {
 
 bool CMagneto::setSerialNumber(long serialNumber) {
 	serialNumber += 134000000;
-	
-	if (FAS_SetParameter(comPortNo, 0, 12, serialNumber) != FMM_OK)
-		return true;
-	else
+
+	bool res = FAS_SetParameter(comPortNo, 0, 12, serialNumber) == FMM_OK;
+
+	if (res) {
+		// Need to call the function for saving into the ROM.
+		return FAS_SaveAllParameters(comPortNo, 0) == FMM_OK;
+	}
+	else 
 		return false;
 }
 

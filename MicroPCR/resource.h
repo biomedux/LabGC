@@ -2,6 +2,7 @@
 // Microsoft Visual C++에서 생성한 포함 파일입니다.
 // MicroPCR.rc에서 사용되고 있습니다.
 //
+#define IDR_FIRMWARE_FILE               101
 #define IDD_MICROPCR_DIALOG             102
 #define IDR_MAINFRAME                   128
 #define IDB_BITMAP_REC_NOT_WORKING      132
@@ -24,6 +25,7 @@
 #define IDD_DIALOG_PROTOCOL_EDITOR      168
 #define IDD_DIALOG_PASSWORD             170
 #define IDD_DIALOG_DEVICE_SETUP         172
+#define FIRMWARE_FILE                   256
 #define IDC_EDIT_DEVICE_STATUS          1000
 #define IDC_EDIT_PCR_STATUS             1000
 #define IDC_EDIT_CHAMBER_TEMP           1001
@@ -190,13 +192,13 @@
 #define IDC_EDIT_MAGNETO_PROTOCOL       1094
 #define IDC_CUSTOM_RESULT_TABLE         1101
 #define IDC_COMBO_RESET_DEVICES         1103
-#define IDC_COMBO_RESET_DEVICES2        1104
+#define IDC_COMBO_MAGNETO_COMPORT       1104
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        174
+#define _APS_NEXT_RESOURCE_VALUE        175
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1104
 #define _APS_NEXT_SYMED_VALUE           101

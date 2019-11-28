@@ -1,6 +1,6 @@
 #pragma once
 
-#define EMULATOR  //KJD
+// #define EMULATOR  //KJD
 
 #ifdef EMULATOR  //KJD
 #define MAX_DRIVER_NUM 1
@@ -150,7 +150,7 @@ namespace Magneto{
 #define M_CHAMBER_STEP_PER_REV			32000.0
 #define M_CHAMBER_GEAR_RATIO			2
 #define M_CHAMBER_OFFSET				1464//s1-1618// s2-1464//1297 //1197	// origin offset (rotate 축 origin이후 보정 값)
-#define M_CHAMBER_DISK_OFFSET			3695	// 20.7844 deg (디스크 기준점에서 디스크의 홀까지 간격)
+#define M_CHAMBER_DISK_OFFSET			3971	// 20.7844 deg (디스크 기준점에서 디스크의 홀까지 간격)
 #define M_CHAMBER_BACKLASH				100//0//680//682
 #define M_CHAMBER_DIFF					1304	// 7.335 deg
 #define M_CHAMBER_INTERVAL				4923	// chamber에 각 간격 사이//(float)27.692

@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "FileManager.h"
 #include <locale.h>
+#include "resource.h"
 
 namespace FileManager
 {
@@ -590,5 +591,43 @@ namespace FileManager
 		}
 
 		return res;
+	}
+
+	void loadFirmwareFile(CString& firmwareData) {
+		// Load from resource firmware data
+		// very good example https://stackoverflow.com/questions/2933295/embed-text-file-in-a-resource-in-a-native-windows-application
+		char *result;
+		HMODULE handle = ::GetModuleHandle(NULL);
+		HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(IDR_FIRMWARE_FILE), MAKEINTRESOURCE(FIRMWARE_FILE));
+		HGLOBAL data = ::LoadResource(handle, rc);
+		DWORD size = ::SizeofResource(handle, rc);
+		result = static_cast<char *>(::LockResource(data));
+
+		// Convert to char * to CString (Ansi) -> (Unicode)
+		CStringA tmpResult(result);
+		firmwareData = tmpResult;
+	}
+
+	void saveFirmwareFile(CString path, vector <CString>& firmwareData) {
+		CStdioFile file;
+		file.Open(path, CStdioFile::modeCreate | CStdioFile::modeWrite);
+
+		file.SeekToBegin();
+
+		for (int i = 0; i < firmwareData.size(); ++i) {
+			// Do not write the \n when the last line
+			if (i != firmwareData.size() - 1) {
+				file.WriteString(firmwareData[i] + "\n");
+			}
+			else {
+				file.WriteString(firmwareData[i]);
+			}
+		}
+
+		file.Close();
+
+		CString message;
+		message.Format(L"%s 경로에 저장되었습니다.", path);
+		AfxMessageBox(message);
 	}
 };
