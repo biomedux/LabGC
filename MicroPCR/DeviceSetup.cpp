@@ -6,6 +6,7 @@
 #include "afxdialogex.h"
 #include "resource.h"
 #include "FileManager.h"
+#include "ConfirmDialog.h"
 
 // CDeviceSetup 대화 상자
 
@@ -117,19 +118,22 @@ void CDeviceSetup::OnBnClickedButtonSetMagnetoSerial()
 		{
 			long currentSerialNumber = magneto->getSerialNumber();
 
-			CString temp;
-			temp.Format(L"현재 장비의 Serial number 는 ""%06d"" 입니다.\n""%06d"" 로 변경하시겠습니까?", currentSerialNumber, targetSerialNumber);
-			AfxMessageBox(temp);
+			CString message;
+			message.Format(L"현재 장비의 Serial number 는 ""%06d"" 입니다.\n""%06d"" 로 변경하시겠습니까?", currentSerialNumber, targetSerialNumber);
 
-			bool res = magneto->setSerialNumber(targetSerialNumber);
+			ConfirmDialog dialog(message);
 
-			if (res) {
-				AfxMessageBox(L"변경되었습니다.");
+			if (dialog.DoModal() == IDOK) {
+				bool res = magneto->setSerialNumber(targetSerialNumber);
+
+				if (res) {
+					AfxMessageBox(L"변경되었습니다.");
+				}
+				else {
+					AfxMessageBox(L"변경에 실패하였습니다. 장비를 체크하세요.");
+				}
 			}
-			else {
-				AfxMessageBox(L"변경에 실패하였습니다. 장비를 체크하세요.");
-			}
-
+			
 			magneto->disconnect();
 		}
 		else {

@@ -355,6 +355,16 @@ BEGIN
     LTEXT           "* 주의사항 : 입력할 Serial number 범위는 000000~999999 입니다.\n 생성된 hex 파일을 아래의 Reset 기능을 이용하여 업로드하세요.\n\n업로드는 직접 BootLoader 모드로 이동 후, 별도의 Boot loader 프로그램을 이용하세요.",IDC_STATIC,16,151,270,42
 END
 
+IDD_DIALOG_CONFIRM DIALOGEX 0, 0, 203, 86
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Confirm"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "확인",IDOK,29,60,59,18
+    PUSHBUTTON      "취소",IDCANCEL,120,60,56,17
+    LTEXT           "",IDC_STATIC_CONFIRM_MESSAGE,18,22,166,24
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -506,6 +516,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 196
     END
+
+    IDD_DIALOG_CONFIRM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 196
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 79
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -561,6 +579,11 @@ BEGIN
 END
 
 IDD_DIALOG_DEVICE_SETUP AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_CONFIRM AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

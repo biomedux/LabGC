@@ -116,6 +116,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ConfirmDialog.cpp" />
     <ClCompile Include="DeviceSetup.cpp" />
     <ClCompile Include="CMainDialog.cpp" />
     <ClCompile Include="CommThread.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="GraphControl\GraphCtrl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConfirmDialog.h" />
     <ClInclude Include="DeviceSetup.h" />
     <ClInclude Include="CMainDialog.h" />
     <ClInclude Include="CommThread.h" />

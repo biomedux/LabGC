@@ -153,6 +153,9 @@
     <ClCompile Include="DeviceSetup.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ConfirmDialog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommThread.h">
@@ -297,6 +300,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="DeviceSetup.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfirmDialog.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
