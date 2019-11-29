@@ -6,7 +6,14 @@
 using namespace std;
 
 // Debug mode 를 동작시킬 경우, UI 에 Edit Box 에 특정 값들을 보여주도록 한다.
-#define DEBUG_MODE
+// #define DEBUG_MODE
+
+// Grpah 를 보여주는 모드 설정
+#define GRAPH_MODE
+
+// Magneto 에 대한 EMULATOR 설정
+// #define EMULATOR  //KJD
+
 
 // Device VID, PID
 #define LS4550EK_VID			0x04D8

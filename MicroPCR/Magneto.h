@@ -1,6 +1,6 @@
 #pragma once
 
-// #define EMULATOR  //KJD
+#include "UserDefs.h"
 
 #ifdef EMULATOR  //KJD
 #define MAX_DRIVER_NUM 1

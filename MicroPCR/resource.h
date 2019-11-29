@@ -26,6 +26,7 @@
 #define IDD_DIALOG_PASSWORD             170
 #define IDD_DIALOG_DEVICE_SETUP         172
 #define IDD_DIALOG_CONFIRM              175
+#define IDD_DIALOG_MAIN_GRAPH           176
 #define FIRMWARE_FILE                   256
 #define IDC_EDIT_DEVICE_STATUS          1000
 #define IDC_EDIT_PCR_STATUS             1000
@@ -195,6 +196,7 @@
 #define IDC_COMBO_RESET_DEVICES         1103
 #define IDC_COMBO_MAGNETO_COMPORT       1104
 #define IDC_STATIC_CONFIRM_MESSAGE      1104
+#define IDC_EDIT_CURRENT_TEMP           1105
 
 // Next default values for new objects
 // 
@@ -202,7 +204,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        177
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1105
+#define _APS_NEXT_CONTROL_VALUE         1106
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
