@@ -9,7 +9,7 @@ using namespace std;
 // #define DEBUG_MODE
 
 // Grpah 를 보여주는 모드 설정
-#define GRAPH_MODE
+// #define GRAPH_MODE
 
 // Magneto 에 대한 EMULATOR 설정
 // #define EMULATOR  //KJD
@@ -126,6 +126,8 @@ public:
 	float ctRox;
 	float ctCY5;
 
+	CString magnetoData;
+
 	vector<Action> actionList;
 
 	Protocol()
@@ -142,6 +144,7 @@ public:
 		, ctHex(38.0)
 		, ctRox(38.0)
 		, ctCY5(38.0)
+		, magnetoData(L"")
 	{
 	}
 };

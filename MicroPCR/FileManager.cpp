@@ -293,6 +293,8 @@ namespace FileManager
 						ar >> protocol.ctRox;
 						ar >> protocol.ctCY5;
 
+						ar >> protocol.magnetoData;
+
 						ar >> size2;
 
 						for (int j = 0; j < size2; ++j) {
@@ -359,6 +361,8 @@ namespace FileManager
 				ar << protocols[i].ctHex;
 				ar << protocols[i].ctRox;
 				ar << protocols[i].ctCY5;
+
+				ar << protocols[i].magnetoData;
 
 				ar << protocols[i].actionList.size();
 
@@ -629,5 +633,31 @@ namespace FileManager
 		CString message;
 		message.Format(L"%s 경로에 저장되었습니다.", path);
 		AfxMessageBox(message);
+	}
+
+	// Filter type 
+	// 0: FAM
+	// 1: HEX
+	// 2: ROX
+	// 3: CY5
+	float getFilterValue(int filterType) {
+		CString filters[4] = {L"FAM.txt", L"HEX.txt", L"ROX.txt", L"CY5.txt"};
+
+		CString path = filters[filterType];
+
+		CStdioFile file;
+		BOOL res = file.Open(path, CFile::modeRead);
+
+		if (!res) {
+			return -1.0;
+		}
+
+		CString line;
+		float result = 0;
+		file.ReadString(line);
+		file.Close();
+
+		result = _ttof(line);
+		return result;
 	}
 };

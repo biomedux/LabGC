@@ -42,4 +42,7 @@ namespace FileManager
 
 	void loadFirmwareFile(CString & firmwareData);
 	void saveFirmwareFile(CString path, vector <CString>& firmwareData);
+
+	// For temp values for filter threshold.
+	float getFilterValue(int filterType);
 };

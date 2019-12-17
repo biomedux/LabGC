@@ -63,7 +63,7 @@ CMainGraphDialog::CMainGraphDialog(CWnd* pParent /*=nullptr*/)
 	, useRox(false)
 	, useCy5(false)
 {
-
+	
 }
 
 CMainGraphDialog::~CMainGraphDialog()
@@ -377,8 +377,7 @@ void CMainGraphDialog::loadProtocolList() {
 
 void CMainGraphDialog::loadMagnetoProtocol() {
 	// Getting the magneto data and check magneto data
-	MagnetoProtocol magnetoData = FileManager::loadMagnetoProtocol(currentProtocol.protocolName);
-	CString magnetoProtocolRes = magneto->loadProtocolFromData(magnetoData.protocolData);
+	CString magnetoProtocolRes = magneto->loadProtocolFromData(currentProtocol.magnetoData);
 
 	if (magneto->isCompileSuccess(magnetoProtocolRes)) {
 		// initialize the protocol
@@ -420,6 +419,8 @@ void CMainGraphDialog::OnLbnSelchangeComboProtocols() {
 	currentProtocol = protocols[selectedIdx];
 	initProtocol();
 	initResultTable();
+
+	loadMagnetoProtocol();
 }
 
 void CMainGraphDialog::calcTotalTime() {
@@ -686,11 +687,8 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 			return;
 		}
 
-		::OutputDebugString(L"home start");
-
 		if (magneto->isIdle()) {
 			KillTimer(Magneto::TimerCleanupTaskID);
-			::OutputDebugString(L"home end");
 			PCREndTask();
 			// Reload original magneto protocol
 			loadMagnetoProtocol();
@@ -1119,14 +1117,10 @@ void CMainGraphDialog::cleanupTask() {
 	// Setting the home command
 	CString magnetoProtocolRes = magneto->loadProtocolFromData(L"home");
 
-	::OutputDebugString(L"cleanup called");
-
 	if (magneto->isCompileSuccess(magnetoProtocolRes)) {
 		// initialize the protocol
 		vector<ActionBeans> treeList;
 		magneto->generateActionList(treeList);
-
-		::OutputDebugString(L"home protocol compiled");
 	}
 
 	magneto->start();
@@ -1389,14 +1383,35 @@ void CMainGraphDialog::clearChartValue() {
 static CString filterTable[4] = { L"FAM", L"HEX", L"ROX", L"CY5" };
 
 void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex) {
+	// ignore the data when the data is over the 10
+	int idx = sensorValue.size();
+
+	if (idx < 10) {
+		return;
+	}
+
+	// BaseMean value
+	float baseMean = 0.0;
+	for (int i = 0; i < sensorValue.size(); ++i) {
+		baseMean += sensorValue[i];
+	}
+	baseMean /= 10.;
+
 	float threshold = 0.697 * flRelativeMax / 10.;
 	float logThreshold = log(threshold);
 	float ct;
 	CString ctText;
 
-	int idx = sensorValue.size();
+	// Getting the log threshold from file
+	float tempLogThreshold = FileManager::getFilterValue(filterIndex);
+
+	// Success to load
+	if (tempLogThreshold > 0.0) {
+		logThreshold = tempLogThreshold;
+	}
+
 	for (int i = 0; i < sensorValue.size(); ++i) {
-		if (log(sensorValue[i]) > logThreshold) {
+		if (log(sensorValue[i] - baseMean) > logThreshold) {
 			idx = i;
 			break;
 		}
@@ -1407,8 +1422,8 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 	}
 	else {
 		float cpos = idx + 1;
-		float cval = log(sensorValue[idx]);
-		float delta = cval - log(sensorValue[idx - 1]);
+		float cval = log(sensorValue[idx] - baseMean);
+		float delta = cval - log(sensorValue[idx - 1] - baseMean);
 		ct = cpos - (cval - logThreshold) / delta;
 		ctText.Format(L"%.2f", ct);
 	}
