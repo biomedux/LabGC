@@ -10,6 +10,7 @@
 #include "SetupDialog.h"
 #include "DeviceSetup.h"
 #include "FileManager.h"
+#include "ProgressThread.h"
 
 #include <numeric>
 
@@ -148,6 +149,7 @@ void CMainGraphDialog::OnBnClickedButtonSetup()
 		if (passwordDialog.resultType == PASSWORD_RESULT_BIOMEDUX) {
 			SetupDialog dlg;
 			dlg.DoModal();
+
 
 			// Reload the protocol list
 			loadProtocolList();
@@ -504,6 +506,10 @@ void CMainGraphDialog::OnBnClickedButtonConnect()
 	CString buttonState;
 	GetDlgItemText(IDC_BUTTON_CONNECT, buttonState);
 
+	// Disable the buttons
+	GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow(FALSE);
+
 	if (buttonState.Compare(L"Connect") == 0) {
 		// Getting the device index
 		int selectedIdx = deviceList.GetCurSel();
@@ -543,7 +549,12 @@ void CMainGraphDialog::OnBnClickedButtonConnect()
 
 			if (result) {
 				// Found the same serial number device.
-				BOOL res = device->OpenDevice(LS4550EK_VID, LS4550EK_PID, device->GetDeviceSerialForConnection(selectedIdx), TRUE);
+				CStringA pcrSerial;
+				pcrSerial.Format("QuPCR%06d", usbSerial);
+				char serialBuffer[20];
+				sprintf(serialBuffer, "%s", pcrSerial);
+
+				BOOL res = device->OpenDevice(LS4550EK_VID, LS4550EK_PID, serialBuffer, TRUE);
 
 				if (res) {
 					// Connection processing
@@ -572,6 +583,7 @@ void CMainGraphDialog::OnBnClickedButtonConnect()
 		else {
 			AfxMessageBox(L"Please select the device first.");
 		}
+
 	}
 	else {
 		isConnected = false;
@@ -581,11 +593,19 @@ void CMainGraphDialog::OnBnClickedButtonConnect()
 
 		device->CloseDevice();
 
+		CString prevTitle;
+		GetWindowText(prevTitle);
+		CString left = prevTitle.Left(prevTitle.Find(L")") + 1);
+		SetWindowText(left);
+
 		SetDlgItemText(IDC_EDIT_CONNECTI_STATUS, L"Disconnected");
 		SetDlgItemText(IDC_BUTTON_CONNECT, L"Connect");
 		GetDlgItem(IDC_COMBO_DEVICE_LIST)->EnableWindow();
 		GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 	}
+
+	GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow(TRUE);
+	GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow(TRUE);
 }
 
 void CMainGraphDialog::OnBnClickedButtonStart()
@@ -594,6 +614,9 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 		AfxMessageBox(L"Magneto data is not exist. Please setting the magneto protocol.");
 		return;
 	}
+	
+	// Disable start button
+	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 
 	if (isConnected && isProtocolLoaded) {
 		isStarted = !isStarted;
@@ -624,9 +647,17 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 
 			magneto->start();
 			SetTimer(Magneto::TimerRuntaskID, Magneto::TimerRuntaskDuration, NULL);
+
+			// Enable stop button
+			GetDlgItem(IDC_BUTTON_START)->EnableWindow(TRUE);
 		}
 		else {
 			// PCREndTask();
+			// Stop the magneto if running
+			if (!magneto->isIdle()) {
+				magneto->stop();
+			}
+
 			cleanupTask();
 
 			KillTimer(Magneto::TimerRuntaskID);
@@ -1018,6 +1049,7 @@ void CMainGraphDialog::timeTask() {
 								// Getting the photodiode data
 								double lights = (double)(photodiode_h & 0x0f) * 256. + (double)(photodiode_l);
 								sensorValues->push_back(lights);
+
 								setChartValue();
 
 								debug.Format(L"filter value : %d, %d, %f\n", photodiode_h, photodiode_l, lights);
@@ -1100,9 +1132,9 @@ void CMainGraphDialog::timeTask() {
 				int sec = totalLeftSec % 60;
 
 				if (min == 0)
-					leftTime.Format(L"%ds", sec);
+					leftTime.Format(L"%02ds", sec);
 				else
-					leftTime.Format(L"%dm %ds", min, sec);
+					leftTime.Format(L"%02dm %02ds", min, sec);
 				SetDlgItemText(IDC_STATIC_PROGRESS_REMAINING_TIME, leftTime);
 			}
 		}
@@ -1114,6 +1146,7 @@ void CMainGraphDialog::cleanupTask() {
 	m_Timer->stopTimer();
 
 	// Start cleanup timer
+
 	// Setting the home command
 	CString magnetoProtocolRes = magneto->loadProtocolFromData(L"home");
 
@@ -1162,6 +1195,7 @@ void CMainGraphDialog::PCREndTask() {
 	GetDlgItem(IDC_COMBO_PROTOCOLS)->EnableWindow();
 	GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow();
 	GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow();
+	GetDlgItem(IDC_BUTTON_START)->EnableWindow();
 	SetDlgItemText(IDC_BUTTON_START, L"Start");
 	SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Idle..");
 	SetDlgItemText(IDC_EDIT_CT_FAM, L"");
@@ -1214,155 +1248,157 @@ void CMainGraphDialog::PCREndTask() {
 }
 
 void CMainGraphDialog::setChartValue() {
-	m_Chart.DeleteAllData();
+	if (isStarted) {
+		m_Chart.DeleteAllData();
 
-	double* dataFam = new double[sensorValuesFam.size() * 2];
-	double* dataHex = new double[sensorValuesHex.size() * 2];
-	double* dataRox = new double[sensorValuesRox.size() * 2];
-	double* dataCy5 = new double[sensorValuesCy5.size() * 2];
+		double* dataFam = new double[sensorValuesFam.size() * 2];
+		double* dataHex = new double[sensorValuesHex.size() * 2];
+		double* dataRox = new double[sensorValuesRox.size() * 2];
+		double* dataCy5 = new double[sensorValuesCy5.size() * 2];
 
-	vector<double> copySensorValuesFam, copySensorValuesHex, copySensorValuesRox, copySensorValuesCy5;
-	double meanFam = 0.0, meanHex = 0.0, meanRox = 0.0, meanCy5 = 0.0;
+		vector<double> copySensorValuesFam, copySensorValuesHex, copySensorValuesRox, copySensorValuesCy5;
+		double meanFam = 0.0, meanHex = 0.0, meanRox = 0.0, meanCy5 = 0.0;
 
-	int maxY = 0;
+		int maxY = 0;
 
-	if (useFam)
-	{
-		// Calculate the mean value first
-		if (sensorValuesFam.size() >= 10) {
-			double sum = std::accumulate(sensorValuesFam.begin(), sensorValuesFam.begin() + 10, 0.0);
-			meanFam = sum / 10;
-		}
-		else {
-			double sum = std::accumulate(sensorValuesFam.begin(), sensorValuesFam.end(), 0.0);
-			meanFam = sum / sensorValuesFam.size();
-		}
-
-		// Copy data
-		for (int i = 0; i < sensorValuesFam.size(); ++i) {
-			copySensorValuesFam.push_back(sensorValuesFam[i] - meanFam);
-		}
-
-		int	nDims_fam = 2, dims_fam[2] = { 2, copySensorValuesFam.size() };
-		for (int i = 0; i < copySensorValuesFam.size(); ++i)
+		if (useFam)
 		{
-			dataFam[i] = i;
-			dataFam[i + copySensorValuesFam.size()] = copySensorValuesFam[i];
-		}
-		m_Chart.SetDataColor(m_Chart.AddData(dataFam, nDims_fam, dims_fam), RGB(0, 0, 255));
+			// Calculate the mean value first
+			if (sensorValuesFam.size() >= 10) {
+				double sum = std::accumulate(sensorValuesFam.begin(), sensorValuesFam.begin() + 10, 0.0);
+				meanFam = sum / 10;
+			}
+			else {
+				double sum = std::accumulate(sensorValuesFam.begin(), sensorValuesFam.end(), 0.0);
+				meanFam = sum / sensorValuesFam.size();
+			}
 
-		int tempMax = *max_element(copySensorValuesFam.begin(), copySensorValuesFam.end());
+			// Copy data
+			for (int i = 0; i < sensorValuesFam.size(); ++i) {
+				copySensorValuesFam.push_back(sensorValuesFam[i] - meanFam);
+			}
 
-		if (maxY < tempMax) {
-			maxY = tempMax;
-		}
-	}
+			int	nDims_fam = 2, dims_fam[2] = { 2, copySensorValuesFam.size() };
+			for (int i = 0; i < copySensorValuesFam.size(); ++i)
+			{
+				dataFam[i] = i;
+				dataFam[i + copySensorValuesFam.size()] = copySensorValuesFam[i];
+			}
+			m_Chart.SetDataColor(m_Chart.AddData(dataFam, nDims_fam, dims_fam), RGB(0, 0, 255));
 
-	if (useHex)
-	{
-		// Calculate the mean value first
-		if (sensorValuesHex.size() >= 10) {
-			double sum = std::accumulate(sensorValuesHex.begin(), sensorValuesHex.begin() + 10, 0.0);
-			meanHex = sum / 10;
-		}
-		else {
-			double sum = std::accumulate(sensorValuesHex.begin(), sensorValuesHex.end(), 0.0);
-			meanHex = sum / sensorValuesHex.size();
-		}
+			int tempMax = *max_element(copySensorValuesFam.begin(), copySensorValuesFam.end());
 
-		// Copy data
-		for (int i = 0; i < sensorValuesHex.size(); ++i) {
-			copySensorValuesHex.push_back(sensorValuesHex[i] - meanHex);
+			if (maxY < tempMax) {
+				maxY = tempMax;
+			}
 		}
 
-		int	nDims_hex = 2, dims_hex[2] = { 2, copySensorValuesHex.size() };
-		for (int i = 0; i < copySensorValuesHex.size(); ++i)
+		if (useHex)
 		{
-			dataHex[i] = i;
-			dataHex[i + copySensorValuesHex.size()] = copySensorValuesHex[i];
-		}
-		m_Chart.SetDataColor(m_Chart.AddData(dataHex, nDims_hex, dims_hex), RGB(0, 255, 0));
+			// Calculate the mean value first
+			if (sensorValuesHex.size() >= 10) {
+				double sum = std::accumulate(sensorValuesHex.begin(), sensorValuesHex.begin() + 10, 0.0);
+				meanHex = sum / 10;
+			}
+			else {
+				double sum = std::accumulate(sensorValuesHex.begin(), sensorValuesHex.end(), 0.0);
+				meanHex = sum / sensorValuesHex.size();
+			}
 
-		int tempMax = *max_element(copySensorValuesHex.begin(), copySensorValuesHex.end());
+			// Copy data
+			for (int i = 0; i < sensorValuesHex.size(); ++i) {
+				copySensorValuesHex.push_back(sensorValuesHex[i] - meanHex);
+			}
 
-		if (maxY < tempMax) {
-			maxY = tempMax;
-		}
-	}
+			int	nDims_hex = 2, dims_hex[2] = { 2, copySensorValuesHex.size() };
+			for (int i = 0; i < copySensorValuesHex.size(); ++i)
+			{
+				dataHex[i] = i;
+				dataHex[i + copySensorValuesHex.size()] = copySensorValuesHex[i];
+			}
+			m_Chart.SetDataColor(m_Chart.AddData(dataHex, nDims_hex, dims_hex), RGB(0, 255, 0));
 
-	if (useRox)
-	{
-		// Calculate the mean value first
-		if (sensorValuesRox.size() >= 10) {
-			double sum = std::accumulate(sensorValuesRox.begin(), sensorValuesRox.begin() + 10, 0.0);
-			meanRox = sum / 10;
-		}
-		else {
-			double sum = std::accumulate(sensorValuesRox.begin(), sensorValuesRox.end(), 0.0);
-			meanRox = sum / sensorValuesRox.size();
-		}
+			int tempMax = *max_element(copySensorValuesHex.begin(), copySensorValuesHex.end());
 
-		// Copy data
-		for (int i = 0; i < sensorValuesRox.size(); ++i) {
-			copySensorValuesRox.push_back(sensorValuesRox[i] - meanRox);
+			if (maxY < tempMax) {
+				maxY = tempMax;
+			}
 		}
 
-		int	nDims_rox = 2, dims_rox[2] = { 2, copySensorValuesRox.size() };
-		for (int i = 0; i < copySensorValuesRox.size(); ++i)
+		if (useRox)
 		{
-			dataRox[i] = i;
-			dataRox[i + copySensorValuesRox.size()] = copySensorValuesRox[i];
-		}
-		m_Chart.SetDataColor(m_Chart.AddData(dataRox, nDims_rox, dims_rox), RGB(0, 128, 0));
+			// Calculate the mean value first
+			if (sensorValuesRox.size() >= 10) {
+				double sum = std::accumulate(sensorValuesRox.begin(), sensorValuesRox.begin() + 10, 0.0);
+				meanRox = sum / 10;
+			}
+			else {
+				double sum = std::accumulate(sensorValuesRox.begin(), sensorValuesRox.end(), 0.0);
+				meanRox = sum / sensorValuesRox.size();
+			}
 
-		int tempMax = *max_element(copySensorValuesRox.begin(), copySensorValuesRox.end());
+			// Copy data
+			for (int i = 0; i < sensorValuesRox.size(); ++i) {
+				copySensorValuesRox.push_back(sensorValuesRox[i] - meanRox);
+			}
 
-		if (maxY < tempMax) {
-			maxY = tempMax;
-		}
-	}
+			int	nDims_rox = 2, dims_rox[2] = { 2, copySensorValuesRox.size() };
+			for (int i = 0; i < copySensorValuesRox.size(); ++i)
+			{
+				dataRox[i] = i;
+				dataRox[i + copySensorValuesRox.size()] = copySensorValuesRox[i];
+			}
+			m_Chart.SetDataColor(m_Chart.AddData(dataRox, nDims_rox, dims_rox), RGB(0, 128, 0));
 
-	if (useCy5)
-	{
-		// Calculate the mean value first
-		if (sensorValuesCy5.size() >= 10) {
-			double sum = std::accumulate(sensorValuesCy5.begin(), sensorValuesCy5.begin() + 10, 0.0);
-			meanCy5 = sum / 10;
-		}
-		else {
-			double sum = std::accumulate(sensorValuesCy5.begin(), sensorValuesCy5.end(), 0.0);
-			meanCy5 = sum / sensorValuesCy5.size();
-		}
+			int tempMax = *max_element(copySensorValuesRox.begin(), copySensorValuesRox.end());
 
-		// Copy data
-		for (int i = 0; i < sensorValuesCy5.size(); ++i) {
-			copySensorValuesCy5.push_back(sensorValuesCy5[i] - meanCy5);
+			if (maxY < tempMax) {
+				maxY = tempMax;
+			}
 		}
 
-		int	nDims_cy5 = 2, dims_cy5[2] = { 2, copySensorValuesCy5.size() };
-		for (int i = 0; i < copySensorValuesCy5.size(); ++i)
+		if (useCy5)
 		{
-			dataCy5[i] = i;
-			dataCy5[i + copySensorValuesCy5.size()] = copySensorValuesCy5[i];
-		}
-		m_Chart.SetDataColor(m_Chart.AddData(dataCy5, nDims_cy5, dims_cy5), RGB(255, 0, 0));
+			// Calculate the mean value first
+			if (sensorValuesCy5.size() >= 10) {
+				double sum = std::accumulate(sensorValuesCy5.begin(), sensorValuesCy5.begin() + 10, 0.0);
+				meanCy5 = sum / 10;
+			}
+			else {
+				double sum = std::accumulate(sensorValuesCy5.begin(), sensorValuesCy5.end(), 0.0);
+				meanCy5 = sum / sensorValuesCy5.size();
+			}
 
-		int tempMax = *max_element(copySensorValuesCy5.begin(), copySensorValuesCy5.end());
+			// Copy data
+			for (int i = 0; i < sensorValuesCy5.size(); ++i) {
+				copySensorValuesCy5.push_back(sensorValuesCy5[i] - meanCy5);
+			}
 
-		if (maxY < tempMax) {
-			maxY = tempMax;
+			int	nDims_cy5 = 2, dims_cy5[2] = { 2, copySensorValuesCy5.size() };
+			for (int i = 0; i < copySensorValuesCy5.size(); ++i)
+			{
+				dataCy5[i] = i;
+				dataCy5[i + copySensorValuesCy5.size()] = copySensorValuesCy5[i];
+			}
+			m_Chart.SetDataColor(m_Chart.AddData(dataCy5, nDims_cy5, dims_cy5), RGB(255, 0, 0));
+
+			int tempMax = *max_element(copySensorValuesCy5.begin(), copySensorValuesCy5.end());
+
+			if (maxY < tempMax) {
+				maxY = tempMax;
+			}
 		}
+
+		maxY += displayDelta;
+
+		// Not use the range when the value is changed.
+		CAxis* axis = m_Chart.GetAxisByLocation(kLocationLeft);
+		// Not used maxY now
+		axis->SetRange(-displayDelta, maxY);
+
+		InvalidateRect(&CRect(15, 130, 470, 500));
+		Invalidate(FALSE);
 	}
-
-	maxY += displayDelta;
-
-	// Not use the range when the value is changed.
-	// CAxis* axis = m_Chart.GetAxisByLocation(kLocationLeft);
-	// Not used maxY now
-	// axis->SetRange(-displayDelta, 40);
-
-	InvalidateRect(&CRect(15, 130, 470, 500));
-	Invalidate(FALSE);
 }
 
 void CMainGraphDialog::clearChartValue() {
@@ -1377,64 +1413,75 @@ void CMainGraphDialog::clearChartValue() {
 	sensorValuesCy5.push_back(1.0);
 
 	m_Chart.DeleteAllData();
+
+	CAxis* axis = m_Chart.GetAxisByLocation(kLocationLeft);
+	axis->SetRange(0, 4096);
+
 	InvalidateRect(&CRect(15, 130, 470, 500));
 }
 
 static CString filterTable[4] = { L"FAM", L"HEX", L"ROX", L"CY5" };
 
 void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex) {
+	// save the result and setting the result
+	CString result = L"FAIL";
+	CString ctText = L"";
+	CString filterLabel[4] = { currentProtocol.labelFam, currentProtocol.labelHex, currentProtocol.labelRox, currentProtocol.labelCY5 };
+
 	// ignore the data when the data is over the 10
 	int idx = sensorValue.size();
 
-	if (idx < 10) {
-		return;
-	}
-
-	// BaseMean value
-	float baseMean = 0.0;
-	for (int i = 0; i < sensorValue.size(); ++i) {
-		baseMean += sensorValue[i];
-	}
-	baseMean /= 10.;
-
-	float threshold = 0.697 * flRelativeMax / 10.;
-	float logThreshold = log(threshold);
-	float ct;
-	CString ctText;
-
-	// Getting the log threshold from file
-	float tempLogThreshold = FileManager::getFilterValue(filterIndex);
-
-	// Success to load
-	if (tempLogThreshold > 0.0) {
-		logThreshold = tempLogThreshold;
-	}
-
-	for (int i = 0; i < sensorValue.size(); ++i) {
-		if (log(sensorValue[i] - baseMean) > logThreshold) {
-			idx = i;
-			break;
+	// If the idx is under the 10, fail
+	if (idx > 10) {
+		// BaseMean value
+		float baseMean = 0.0;
+		for (int i = 0; i < sensorValue.size(); ++i) {
+			baseMean += sensorValue[i];
 		}
-	}
+		baseMean /= 10.;
 
-	if (idx >= sensorValue.size() || idx <= 0) {
-		return;
-	}
-	else {
-		float cpos = idx + 1;
-		float cval = log(sensorValue[idx] - baseMean);
-		float delta = cval - log(sensorValue[idx - 1] - baseMean);
-		ct = cpos - (cval - logThreshold) / delta;
-		ctText.Format(L"%.2f", ct);
-	}
+		float threshold = 0.697 * flRelativeMax / 10.;
+		float logThreshold = log(threshold);
+		float ct;
 
-	// save the result and setting the result
-	CString result = L"Positive";
-	CString filterLabel[4] = { currentProtocol.labelFam, currentProtocol.labelHex, currentProtocol.labelRox, currentProtocol.labelCY5 };
-	double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };
+		// Getting the log threshold from file
+		float tempLogThreshold = FileManager::getFilterValue(filterIndex);
 
-	if (resultRange[filterIndex] <= ct) {
-		result = L"Negative";
+		// Success to load
+		if (tempLogThreshold > 0.0) {
+			logThreshold = tempLogThreshold;
+		}
+
+		for (int i = 0; i < sensorValue.size(); ++i) {
+			if (log(sensorValue[i] - baseMean) > logThreshold) {
+				idx = i;
+				break;
+			}
+		}
+
+		if (idx >= sensorValue.size() || idx <= 0) {
+			result = L"Not detected";
+		}
+		else {
+			double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };
+
+			float cpos = idx + 1;
+			float cval = log(sensorValue[idx] - baseMean);
+			float delta = cval - log(sensorValue[idx - 1] - baseMean);
+			ct = cpos - (cval - logThreshold) / delta;
+			ctText.Format(L"%.2f", ct);
+
+			if (resultRange[filterIndex] <= ct) {
+				result = L"Negative";
+			}
+			else {
+				result = L"Positive";
+			}
+
+			// Setting the CT text
+			int ID_LIST[4] = { IDC_EDIT_CT_FAM, IDC_EDIT_CT_HEX, IDC_EDIT_CT_ROX, IDC_EDIT_CT_CY5 };
+			SetDlgItemText(ID_LIST[filterIndex], ctText);
+		}
 	}
 
 	vector<History> historyList;
@@ -1454,10 +1501,6 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 
 	// resultTable.SetItemFont(item.row, item.col, )
 	resultTable.SetItem(&item);
-
-	// Setting the CT text
-	int ID_LIST[4] = { IDC_EDIT_CT_FAM, IDC_EDIT_CT_HEX, IDC_EDIT_CT_ROX, IDC_EDIT_CT_CY5 };
-	SetDlgItemText(ID_LIST[filterIndex], ctText);
 }
 
 void CMainGraphDialog::initLog() {
@@ -1479,8 +1522,13 @@ void CMainGraphDialog::initLog() {
 
 void CMainGraphDialog::clearLog() {
 	logStopped = true;
-	m_recFile.Close();
-	m_recPDFile.Close();
+
+	if (m_recFile != NULL) {
+		m_recFile.Close();
+	}
+	if (m_recPDFile != NULL) {
+		m_recPDFile.Close();
+	}
 }
 
 void CMainGraphDialog::OnBnClickedButtonFilterFam()

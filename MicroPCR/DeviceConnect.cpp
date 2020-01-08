@@ -65,10 +65,11 @@ BOOL CDeviceConnect::OpenDevice(int Vid, int Pid, char* Serial, BOOL IsBlock)
 {
 	int status = m_cDevices.Open(Vid, Pid, NULL, Serial, NULL, IsBlock);
 
+	::OutputDebugStringA(Serial);
+
 	if (status)
 	{
 		char *Serial = m_cDevices.m_SerialNumber;
-		::OutputDebugStringA(Serial);
 		PostMessage(m_hDlg, WM_SET_SERIAL, 0x00, (LPARAM)Serial);
 		return TRUE;
 	}

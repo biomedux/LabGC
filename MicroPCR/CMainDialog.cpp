@@ -403,6 +403,10 @@ void CMainDialog::OnBnClickedButtonConnect()
 	CString buttonState;
 	GetDlgItemText(IDC_BUTTON_CONNECT, buttonState);
 
+	// Disable the buttons
+	GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow(FALSE);
+
 	if (buttonState.Compare(L"Connect") == 0) {
 		// Getting the device index
 		int selectedIdx = deviceList.GetCurSel();
@@ -442,7 +446,13 @@ void CMainDialog::OnBnClickedButtonConnect()
 
 			if (result) {
 				// Found the same serial number device.
-				BOOL res = device->OpenDevice(LS4550EK_VID, LS4550EK_PID, device->GetDeviceSerialForConnection(selectedIdx), TRUE);
+				// Found the same serial number device.
+				CStringA pcrSerial;
+				pcrSerial.Format("QuPCR%06d", usbSerial);
+				char serialBuffer[20];
+				sprintf(serialBuffer, "%s", pcrSerial);
+
+				BOOL res = device->OpenDevice(LS4550EK_VID, LS4550EK_PID, serialBuffer, TRUE);
 
 				if (res) {
 					// Connection processing
@@ -480,11 +490,19 @@ void CMainDialog::OnBnClickedButtonConnect()
 
 		device->CloseDevice();
 
+		CString prevTitle;
+		GetWindowText(prevTitle);
+		CString left = prevTitle.Left(prevTitle.Find(L")") + 1);
+		SetWindowText(left);
+
 		SetDlgItemText(IDC_EDIT_CONNECTI_STATUS, L"Disconnected");
 		SetDlgItemText(IDC_BUTTON_CONNECT, L"Connect");
 		GetDlgItem(IDC_COMBO_DEVICE_LIST)->EnableWindow();
 		GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 	}
+
+	GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow(TRUE);
+	GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow(TRUE);
 }
 
 void CMainDialog::OnBnClickedButtonStart()
@@ -493,6 +511,9 @@ void CMainDialog::OnBnClickedButtonStart()
 		AfxMessageBox(L"Magneto data is not exist. Please setting the magneto protocol.");
 		return;
 	}
+
+	// Disable start button
+	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 
 	if (isConnected && isProtocolLoaded) {
 		isStarted = !isStarted;
@@ -521,6 +542,9 @@ void CMainDialog::OnBnClickedButtonStart()
 
 			magneto->start();
 			SetTimer(Magneto::TimerRuntaskID, Magneto::TimerRuntaskDuration, NULL);
+
+			// Enable stop button
+			GetDlgItem(IDC_BUTTON_START)->EnableWindow(TRUE);
 		}
 		else {
 			GetDlgItem(IDC_COMBO_PROTOCOLS)->EnableWindow();
@@ -996,9 +1020,9 @@ void CMainDialog::timeTask() {
 				int sec = totalLeftSec % 60;
 
 				if (min == 0)
-					leftTime.Format(L"%ds", sec);
+					leftTime.Format(L"%02ds", sec);
 				else
-					leftTime.Format(L"%dm %ds", min, sec);
+					leftTime.Format(L"%02dm %02ds", min, sec);
 				SetDlgItemText(IDC_STATIC_PROGRESS_REMAINING_TIME, leftTime);
 			}
 		}
@@ -1058,6 +1082,7 @@ void CMainDialog::PCREndTask() {
 	GetDlgItem(IDC_COMBO_PROTOCOLS)->EnableWindow();
 	GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow();
 	GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow();
+
 	SetDlgItemText(IDC_BUTTON_START, L"Start");
 	SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Idle..");
 
@@ -1107,58 +1132,61 @@ void CMainDialog::PCREndTask() {
 static CString filterTable[4] = { L"FAM", L"HEX", L"ROX", L"CY5" };
 
 void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex) {
+	// save the result and setting the result
+	CString result = L"FAIL";
+	CString ctText = L"";
+	CString filterLabel[4] = { currentProtocol.labelFam, currentProtocol.labelHex, currentProtocol.labelRox, currentProtocol.labelCY5 };
+
 	// ignore the data when the data is over the 10
 	int idx = sensorValue.size();
 
-	if (idx < 10) {
-		return;
-	}
-
-	// BaseMean value
-	float baseMean = 0.0;
-	for (int i = 0; i < sensorValue.size(); ++i) {
-		baseMean += sensorValue[i];
-	}
-	baseMean /= 10.;
-	
-	float threshold = 0.697 * flRelativeMax / 10.;
-	float logThreshold = log(threshold);
-	float ct;
-	CString ctText;
-
-	// Getting the log threshold from file
-	float tempLogThreshold = FileManager::getFilterValue(filterIndex);
-
-	// Success to load
-	if (tempLogThreshold > 0.0) {
-		logThreshold = tempLogThreshold;
-	}
-	
-	for (int i = 0; i < sensorValue.size(); ++i) {
-		if (log(sensorValue[i] - baseMean) > logThreshold) {
-			idx = i;
-			break;
+	// If the idx is under the 10, fail
+	if (idx > 10) {
+		// BaseMean value
+		float baseMean = 0.0;
+		for (int i = 0; i < sensorValue.size(); ++i) {
+			baseMean += sensorValue[i];
 		}
-	}
+		baseMean /= 10.;
 
-	if (idx >= sensorValue.size() || idx <= 0) {
-		return;
-	}
-	else {
-		float cpos = idx + 1;
-		float cval = log(sensorValue[idx] - baseMean);
-		float delta = cval - log(sensorValue[idx - 1] - baseMean);
-		ct = cpos - (cval - logThreshold) / delta;
-		ctText.Format(L"%.2f", ct);
-	}
+		float threshold = 0.697 * flRelativeMax / 10.;
+		float logThreshold = log(threshold);
+		float ct;
 
-	// save the result and setting the result
-	CString result = L"Positive";
-	CString filterLabel[4] = { currentProtocol.labelFam, currentProtocol.labelHex, currentProtocol.labelRox, currentProtocol.labelCY5 };
-	double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };
+		// Getting the log threshold from file
+		float tempLogThreshold = FileManager::getFilterValue(filterIndex);
 
-	if (resultRange[filterIndex] <= ct) {
-		result = L"Negative";
+		// Success to load
+		if (tempLogThreshold > 0.0) {
+			logThreshold = tempLogThreshold;
+		}
+
+		for (int i = 0; i < sensorValue.size(); ++i) {
+			if (log(sensorValue[i] - baseMean) > logThreshold) {
+				idx = i;
+				break;
+			}
+		}
+
+		if (idx >= sensorValue.size() || idx <= 0) {
+			result = L"Not detected";
+		}
+		else {
+			double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };
+
+			float cpos = idx + 1;
+			float cval = log(sensorValue[idx] - baseMean);
+			float delta = cval - log(sensorValue[idx - 1] - baseMean);
+			ct = cpos - (cval - logThreshold) / delta;
+			ctText.Format(L"%.2f", ct);
+
+			if (resultRange[filterIndex] <= ct) {
+				result = L"Negative";
+			}
+			else {
+				result = L"Positive";
+			}
+		}
 	}
 
 	vector<History> historyList;
@@ -1199,6 +1227,10 @@ void CMainDialog::initLog() {
 
 void CMainDialog::clearLog() {
 	logStopped = true;
-	m_recFile.Close();
-	m_recPDFile.Close();
+	if (m_recFile != NULL) {
+		m_recFile.Close();
+	}
+	if (m_recPDFile != NULL) {
+		m_recPDFile.Close();
+	}
 }

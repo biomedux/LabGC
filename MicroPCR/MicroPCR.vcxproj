@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClCompile Include="CMainGraphDialog.cpp" />
     <ClCompile Include="ConfirmDialog.cpp" />
+    <ClCompile Include="CProgressDialog.cpp" />
     <ClCompile Include="DeviceSetup.cpp" />
     <ClCompile Include="CMainDialog.cpp" />
     <ClCompile Include="CommThread.cpp" />
@@ -133,6 +134,7 @@
     <ClCompile Include="PasswordDialog.cpp" />
     <ClCompile Include="PIDCreateDlg.cpp" />
     <ClCompile Include="PIDManagerDlg.cpp" />
+    <ClCompile Include="ProgressThread.cpp" />
     <ClCompile Include="ProtocolEditorDialog.cpp" />
     <ClCompile Include="SaveDlg.cpp" />
     <ClCompile Include="SetupDialog.cpp" />
@@ -164,6 +166,7 @@
   <ItemGroup>
     <ClInclude Include="CMainGraphDialog.h" />
     <ClInclude Include="ConfirmDialog.h" />
+    <ClInclude Include="CProgressDialog.h" />
     <ClInclude Include="DeviceSetup.h" />
     <ClInclude Include="CMainDialog.h" />
     <ClInclude Include="CommThread.h" />
@@ -179,6 +182,7 @@
     <ClInclude Include="PasswordDialog.h" />
     <ClInclude Include="PIDCreateDlg.h" />
     <ClInclude Include="PIDManagerDlg.h" />
+    <ClInclude Include="ProgressThread.h" />
     <ClInclude Include="ProtocolEditorDialog.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SaveDlg.h" />

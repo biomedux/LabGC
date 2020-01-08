@@ -159,6 +159,12 @@
     <ClCompile Include="CMainGraphDialog.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="CProgressDialog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressThread.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommThread.h">
@@ -309,6 +315,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="CMainGraphDialog.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CProgressDialog.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgressThread.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

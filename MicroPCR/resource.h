@@ -27,6 +27,7 @@
 #define IDD_DIALOG_DEVICE_SETUP         172
 #define IDD_DIALOG_CONFIRM              175
 #define IDD_DIALOG_MAIN_GRAPH           176
+#define IDD_DIALOG_PROGRESS             177
 #define FIRMWARE_FILE                   256
 #define IDC_EDIT_DEVICE_STATUS          1000
 #define IDC_EDIT_PCR_STATUS             1000
@@ -178,6 +179,7 @@
 #define IDC_COMBO_DEVICE_LIST           1082
 #define IDC_BUTTON_PROTOCOL_CANCEL      1082
 #define IDC_BUTTON_SET_MAGNETO_SERIAL   1082
+#define IDC_BUTTON_DELETE_PROTOCOL      1082
 #define IDC_STATIC_PROGRESS_STATUS      1083
 #define IDC_RADIO_PROTOCOL_GOTO         1083
 #define IDC_RADIO_PROTOCOL_SHOT         1084
@@ -197,14 +199,15 @@
 #define IDC_COMBO_MAGNETO_COMPORT       1104
 #define IDC_STATIC_CONFIRM_MESSAGE      1104
 #define IDC_EDIT_CURRENT_TEMP           1105
+#define IDC_PROGRESS                    1106
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        177
+#define _APS_NEXT_RESOURCE_VALUE        179
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1106
+#define _APS_NEXT_CONTROL_VALUE         1107
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
