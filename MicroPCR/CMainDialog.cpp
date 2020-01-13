@@ -1144,7 +1144,7 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 	if (idx > 10) {
 		// BaseMean value
 		float baseMean = 0.0;
-		for (int i = 0; i < sensorValue.size(); ++i) {
+		for (int i = 0; i < 10; ++i) {
 			baseMean += sensorValue[i];
 		}
 		baseMean /= 10.;
