@@ -903,6 +903,7 @@ void CMainDialog::timeTask() {
 					}
 
 					values.Format(L"%6d	%8.0f	%3.1f	%3.1f	%3.1f	%3.1f\n", currentCycle, currentTime, sensorValue, sensorValue2, sensorValue3, sensorValue4);
+					::OutputDebugString(values);
 					m_recPDFile.WriteString(values);
 				}
 				else {
@@ -1141,7 +1142,7 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 	int idx = sensorValue.size();
 
 	// If the idx is under the 10, fail
-	if (idx > 10) {
+	if (idx >= 10) {
 		// BaseMean value
 		float baseMean = 0.0;
 		for (int i = 0; i < 10; ++i) {

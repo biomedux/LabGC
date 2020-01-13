@@ -1000,16 +1000,16 @@ void CMainGraphDialog::timeTask() {
 					double sensorValue = 0.0, sensorValue2 = 0.0, sensorValue3 = 0.0, sensorValue4 = 0.0;
 
 					if (currentProtocol.useFam) {
-						sensorValue = sensorValuesFam[currentCycle - 1];
+						sensorValue = sensorValuesFam[currentCycle];
 					}
 					if (currentProtocol.useHex) {
-						sensorValue2 = sensorValuesHex[currentCycle - 1];
+						sensorValue2 = sensorValuesHex[currentCycle];
 					}
 					if (currentProtocol.useRox) {
-						sensorValue3 = sensorValuesRox[currentCycle - 1];
+						sensorValue3 = sensorValuesRox[currentCycle];
 					}
 					if (currentProtocol.useCY5) {
-						sensorValue4 = sensorValuesCy5[currentCycle - 1];
+						sensorValue4 = sensorValuesCy5[currentCycle];
 					}
 
 					values.Format(L"%6d	%8.0f	%3.1f	%3.1f	%3.1f	%3.1f\n", currentCycle, currentTime, sensorValue, sensorValue2, sensorValue3, sensorValue4);
@@ -1264,8 +1264,8 @@ void CMainGraphDialog::setChartValue() {
 		if (useFam)
 		{
 			// Calculate the mean value first
-			if (sensorValuesFam.size() >= 10) {
-				double sum = std::accumulate(sensorValuesFam.begin(), sensorValuesFam.begin() + 10, 0.0);
+			if (sensorValuesFam.size() >= 11) {
+				double sum = std::accumulate(sensorValuesFam.begin()+1, sensorValuesFam.begin() + 11, 0.0);
 				meanFam = sum / 10;
 			}
 			else {
@@ -1275,7 +1275,12 @@ void CMainGraphDialog::setChartValue() {
 
 			// Copy data
 			for (int i = 0; i < sensorValuesFam.size(); ++i) {
-				copySensorValuesFam.push_back(sensorValuesFam[i] - meanFam);
+				if (i >= 1) {
+					copySensorValuesFam.push_back(sensorValuesFam[i] - meanFam);
+				}
+				else {
+					copySensorValuesFam.push_back(sensorValuesFam[i]);
+				}
 			}
 
 			int	nDims_fam = 2, dims_fam[2] = { 2, copySensorValuesFam.size() };
@@ -1296,8 +1301,8 @@ void CMainGraphDialog::setChartValue() {
 		if (useHex)
 		{
 			// Calculate the mean value first
-			if (sensorValuesHex.size() >= 10) {
-				double sum = std::accumulate(sensorValuesHex.begin(), sensorValuesHex.begin() + 10, 0.0);
+			if (sensorValuesHex.size() >= 11) {
+				double sum = std::accumulate(sensorValuesHex.begin()+1, sensorValuesHex.begin() + 11, 0.0);
 				meanHex = sum / 10;
 			}
 			else {
@@ -1307,7 +1312,12 @@ void CMainGraphDialog::setChartValue() {
 
 			// Copy data
 			for (int i = 0; i < sensorValuesHex.size(); ++i) {
-				copySensorValuesHex.push_back(sensorValuesHex[i] - meanHex);
+				if (i >= 1) {
+					copySensorValuesHex.push_back(sensorValuesHex[i] - meanHex);
+				}
+				else {
+					copySensorValuesHex.push_back(sensorValuesHex[i]);
+				}
 			}
 
 			int	nDims_hex = 2, dims_hex[2] = { 2, copySensorValuesHex.size() };
@@ -1328,8 +1338,8 @@ void CMainGraphDialog::setChartValue() {
 		if (useRox)
 		{
 			// Calculate the mean value first
-			if (sensorValuesRox.size() >= 10) {
-				double sum = std::accumulate(sensorValuesRox.begin(), sensorValuesRox.begin() + 10, 0.0);
+			if (sensorValuesRox.size() >= 11) {
+				double sum = std::accumulate(sensorValuesRox.begin()+1, sensorValuesRox.begin() + 11, 0.0);
 				meanRox = sum / 10;
 			}
 			else {
@@ -1339,7 +1349,12 @@ void CMainGraphDialog::setChartValue() {
 
 			// Copy data
 			for (int i = 0; i < sensorValuesRox.size(); ++i) {
-				copySensorValuesRox.push_back(sensorValuesRox[i] - meanRox);
+				if (i >= 1) {
+					copySensorValuesRox.push_back(sensorValuesRox[i] - meanRox);
+				}
+				else {
+					copySensorValuesRox.push_back(sensorValuesRox[i]);
+				}
 			}
 
 			int	nDims_rox = 2, dims_rox[2] = { 2, copySensorValuesRox.size() };
@@ -1360,8 +1375,8 @@ void CMainGraphDialog::setChartValue() {
 		if (useCy5)
 		{
 			// Calculate the mean value first
-			if (sensorValuesCy5.size() >= 10) {
-				double sum = std::accumulate(sensorValuesCy5.begin(), sensorValuesCy5.begin() + 10, 0.0);
+			if (sensorValuesCy5.size() >= 11) {
+				double sum = std::accumulate(sensorValuesCy5.begin()+1, sensorValuesCy5.begin() + 11, 0.0);
 				meanCy5 = sum / 10;
 			}
 			else {
@@ -1371,7 +1386,12 @@ void CMainGraphDialog::setChartValue() {
 
 			// Copy data
 			for (int i = 0; i < sensorValuesCy5.size(); ++i) {
-				copySensorValuesCy5.push_back(sensorValuesCy5[i] - meanCy5);
+				if (i >= 1) {
+					copySensorValuesCy5.push_back(sensorValuesCy5[i] - meanCy5);
+				}
+				else {
+					copySensorValuesCy5.push_back(sensorValuesCy5[i]);
+				}
 			}
 
 			int	nDims_cy5 = 2, dims_cy5[2] = { 2, copySensorValuesCy5.size() };
@@ -1432,10 +1452,10 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 	int idx = sensorValue.size();
 
 	// If the idx is under the 10, fail
-	if (idx > 10) {
+	if (idx >= 11) {
 		// BaseMean value
 		float baseMean = 0.0;
-		for (int i = 0; i < 10; ++i) {
+		for (int i = 1; i < 11; ++i) {
 			baseMean += sensorValue[i];
 		}
 		baseMean /= 10.;
