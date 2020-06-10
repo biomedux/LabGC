@@ -170,6 +170,29 @@ namespace FileManager
 		file.Close();
 	}
 
+	void errorLog(CString msg, int count) {
+		CTime time = CTime::GetCurrentTime();
+		CString path = L"errorLog.txt";
+
+		CStdioFile file;
+		CFileFind finder;
+		if (finder.FindFile(path))
+			file.Open(path, CStdioFile::modeWrite);
+		else
+			file.Open(path, CStdioFile::modeCreate | CStdioFile::modeWrite);
+
+		file.SeekToEnd();
+		if (count < 0) {
+			file.WriteString(time.Format(L"[%Y:%m:%d-%H:%M:%S] ") + msg + L"\n");
+		}
+		else {
+			CString message;
+			message.Format(L"%s%s - count(%d)\n", time.Format(L"[%Y:%m:%d-%H:%M:%S] "), msg, count);
+			file.WriteString(message);
+		}
+		file.Close();
+	}
+
 	bool loadConstants(int &maxCycle, int &compensation, float &integralMax, float &displayDelta, float &flRelativeMax, vector<PID> &pids)
 	{
 		CFile file;

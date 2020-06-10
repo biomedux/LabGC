@@ -437,7 +437,7 @@ void CMagneto::initPredefinedAction()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CMagneto::initDriverParameter(){
+void CMagneto::initDriverParameter() {
 	/*
 	if (FAS_SetParameter(comPortNo, 0, 17, 20000) != FMM_OK)
 		driverErrCnt++;// magnet home speed: 20000 pps
@@ -460,49 +460,88 @@ void CMagneto::initDriverParameter(){
 	*/
 	//KSY
 	// set default
-	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 13, -134217728) != FMM_OK)
+	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 13, -134217728) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 21, 0) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::CHAMBER, 13, -134217728 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 21, 0) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::CHAMBER, 34, 400) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::CHAMBER, 21, 0 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 34, 400) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::CHAMBER,35, 1) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::CHAMBER, 34, 400 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 35, 1) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::FILTER,13, -134217728) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::CHAMBER, 35, 1 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::FILTER, 13, -134217728) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::FILTER,21, 0) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::FILTER, 13, -134217728 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::FILTER, 21, 0) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::FILTER,34, 400) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::FILTER, 21, 0 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::FILTER, 34, 400) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::FILTER,35, 1) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::FILTER, 34, 400 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::FILTER, 35, 1) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::PUMPING,13, -134217728) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::FILTER, 35, 1 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 13, -134217728) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::PUMPING,21, 0) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::PUMPING, 13, -134217728 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 21, 0) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::PUMPING,34, 400) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::PUMPING, 21, 0 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 34, 400) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo,MotorType::PUMPING,35, 1) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::PUMPING, 34, 400 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 35, 1) != FMM_OK) {
 		driverErrCnt++;
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::PUMPING, 35, 1 error", driverErrCnt);
+	}
 
-	
 	// set parameter
-	if (FAS_ServoEnable(comPortNo, MotorType::CHAMBER, 1) != FMM_OK)
+	if (FAS_ServoEnable(comPortNo, MotorType::CHAMBER, 1) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 28,1) != FMM_OK)		// rotate 축 motion dir 변경(CW->CCW)
+		FileManager::errorLog(L"initDriverParameter FAS_ServoEnable MotorType::CHAMBER, 1 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 28, 1) != FMM_OK) {		// rotate 축 motion dir 변경(CW->CCW)
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 0, 0) != FMM_OK)		// rotate 축 resolution 변경(32000)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::CHAMBER, 28, 1 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 0, 0) != FMM_OK) {		// rotate 축 resolution 변경(32000)
 		driverErrCnt++;
-	if (FAS_ServoEnable(comPortNo, MotorType::PUMPING, 1) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::CHAMBER, 0, 0 error", driverErrCnt);
+	}
+	if (FAS_ServoEnable(comPortNo, MotorType::PUMPING, 1) != FMM_OK) {
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 21,1) != FMM_OK)		// PUMPING 축 home 방향 변경(CCW->CW)
+		FileManager::errorLog(L"initDriverParameter FAS_ServoEnable MotorType::PUMPING, 1 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 21, 1) != FMM_OK) {		// PUMPING 축 home 방향 변경(CCW->CW)
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 17,M_PUMPING_SPEED/2) != FMM_OK)	// PUMPING 축 home 속도 변경(50000) //KJD
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::PUMPING, 21, 1 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 17, M_PUMPING_SPEED / 2) != FMM_OK) {	// PUMPING 축 home 속도 변경(50000) //KJD
 		driverErrCnt++;
-	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 18, M_PUMPING_SPEED/10) != FMM_OK)	// PUMPING 축 serach speed 변경(10000) //KJD
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::PUMPING, 17 error", driverErrCnt);
+	}
+	if (FAS_SetParameter(comPortNo, MotorType::PUMPING, 18, M_PUMPING_SPEED / 10) != FMM_OK) {	// PUMPING 축 serach speed 변경(10000) //KJD
 		driverErrCnt++;
-	if (FAS_ServoEnable(comPortNo, MotorType::FILTER, 1) != FMM_OK)
+		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::PUMPING, 18 error", driverErrCnt);
+	}
+	if (FAS_ServoEnable(comPortNo, MotorType::FILTER, 1) != FMM_OK) {
 		driverErrCnt++;
+		FileManager::errorLog(L"initDriverParameter FAS_ServoEnable MotorType::FILTER, 1 error", driverErrCnt);
+	}
 }
 
 void CMagneto::generateActionList(vector<ActionBeans> &returnValue)
@@ -675,6 +714,7 @@ bool CMagneto::isLimitSwitchPushed()
 	for (int i = 0; i < Magneto::MaxSlaves; ++i){
 		if (FAS_GetAxisStatus(comPortNo, i, &axisStatus.dwValue) != FMM_OK){
 			driverErrCnt++;
+			FileManager::errorLog(L"isLimitSwitchPushed FAS_GetAxisStatus error", driverErrCnt);
 			return true;
 		}
 		if (axisStatus.FFLAG_HWPOSILMT || axisStatus.FFLAG_HWNEGALMT)
@@ -703,6 +743,7 @@ bool CMagneto::isActionFinished()
 		if (FAS_GetAxisStatus(comPortNo, ab.args[0], &axisStatus.dwValue) != FMM_OK)
 		{
 			driverErrCnt++;
+			FileManager::errorLog(L"isActionFinished FAS_GetAxisStatus error", driverErrCnt);
 			return true;
 		}
 	}
@@ -820,21 +861,29 @@ void CMagneto::runNextAction()
 	switch (cmd)
 	{
 		case ActionCmd::HOME:
-		if (FAS_MoveOriginSingleAxis(comPortNo, slaveNo) != FMM_OK)
-			driverErrCnt++;
+			if (FAS_MoveOriginSingleAxis(comPortNo, slaveNo) != FMM_OK) {
+				driverErrCnt++;
+				FileManager::errorLog(L"runNextAction FAS_MoveOriginSingleAxis HOME error", driverErrCnt);
+			}
 		break;
 	
 		case ActionCmd::MOVE_ABS:
-			if (FAS_MoveSingleAxisAbsPos(comPortNo, slaveNo, cmdPos, velocity) != FMM_OK)
+			if (FAS_MoveSingleAxisAbsPos(comPortNo, slaveNo, cmdPos, velocity) != FMM_OK) {
 				driverErrCnt++;
+				FileManager::errorLog(L"runNextAction FAS_MoveSingleAxisAbsPos ABS error", driverErrCnt);
+			}
 			break;
 		case ActionCmd::MOVE_INC:
-			if (FAS_MoveSingleAxisIncPos(comPortNo, slaveNo, cmdPos, velocity) != FMM_OK)
+			if (FAS_MoveSingleAxisIncPos(comPortNo, slaveNo, cmdPos, velocity) != FMM_OK) {
 				driverErrCnt++;
+				FileManager::errorLog(L"runNextAction FAS_MoveSingleAxisIncPos INC error", driverErrCnt);
+			}
 			break;
 		case ActionCmd::MOVE_DEC:
-			if (FAS_MoveSingleAxisIncPos(comPortNo, slaveNo, cmdPos, velocity) != FMM_OK)
+			if (FAS_MoveSingleAxisIncPos(comPortNo, slaveNo, cmdPos, velocity) != FMM_OK) {
 				driverErrCnt++;
+				FileManager::errorLog(L"runNextAction FAS_MoveSingleAxisIncPos DEC error", driverErrCnt);
+			}
 			break;
 
 		case ActionCmd::PCR:
@@ -845,13 +894,17 @@ void CMagneto::runNextAction()
 			break;
 		case ActionCmd::MAGNET_ON:
 
-			if (FAS_SetIOOutput(comPortNo, slaveNo, SERVO_OUT_BITMASK_USEROUT0, 0) != FMM_OK)
+			if (FAS_SetIOOutput(comPortNo, slaveNo, SERVO_OUT_BITMASK_USEROUT0, 0) != FMM_OK) {
 				driverErrCnt++;
+				FileManager::errorLog(L"runNextAction FAS_SetIOOutput MAGNET_ON error", driverErrCnt);
+			}
 			break;
 		case ActionCmd::MAGNET_OFF:
 
-			if (FAS_SetIOOutput(comPortNo, slaveNo, 0, SERVO_OUT_BITMASK_USEROUT0) != FMM_OK)
+			if (FAS_SetIOOutput(comPortNo, slaveNo, 0, SERVO_OUT_BITMASK_USEROUT0) != FMM_OK) {
 				driverErrCnt++;
+				FileManager::errorLog(L"runNextAction FAS_SetIOOutput MAGNET_OFF error", driverErrCnt);
+			}
 			break;
 		case ActionCmd::SECOND_WAIT:
 		{
@@ -968,8 +1021,11 @@ bool CMagneto::runTask()
 	long tempPos = 0;
 	double cmdPos = 0.0, targetPos = 0.0;
 
-	if (FAS_GetCommandPos(comPortNo, ab.args[0], &tempPos) != FMM_OK)
+	if (FAS_GetCommandPos(comPortNo, ab.args[0], &tempPos) != FMM_OK) {
 		driverErrCnt++;
+		
+		FileManager::errorLog(L"runTask - GetCommandPos error", driverErrCnt);
+	}
 
 	cmdPos = pulse2mili((MotorType::Enum)ab.args[0], tempPos);
 	if (ab.args.size() >= 2)
@@ -1042,8 +1098,11 @@ void CMagneto::runFilterAction(int absPos)
 	int position = 0;
 	position = M_FILTER_INTERVAL_PULSE * (absPos)+M_FILTER_OFFSET; //+ M_FILTER_OFFSET; // (filter*M_FILTER_INTERVAL) + M_FILTER_OFFSET;
 
-	if (FAS_MoveSingleAxisAbsPos(comPortNo, MotorType::FILTER, position, M_FILTER_SPEED) != FMM_OK)
+	if (FAS_MoveSingleAxisAbsPos(comPortNo, MotorType::FILTER, position, M_FILTER_SPEED) != FMM_OK) {
 		driverErrCnt++;
+
+		FileManager::errorLog(L"runFilterAction - FAS_MoveSingleAxisAbsPos error", driverErrCnt);
+	}
 }
 
 int CMagneto::getTotalActionNumber() {

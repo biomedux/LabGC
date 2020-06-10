@@ -39,6 +39,7 @@ namespace FileManager
 	bool saveHistory(vector<History>& historyList);
 
 	void log(CString msg);
+	void errorLog(CString msg, int count = -1);
 
 	void loadFirmwareFile(CString & firmwareData);
 	void saveFirmwareFile(CString path, vector <CString>& firmwareData);
