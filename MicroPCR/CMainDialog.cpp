@@ -10,6 +10,7 @@
 #include "SetupDialog.h"
 #include "DeviceSetup.h"
 #include "FileManager.h"
+#include "ConfirmDialog.h"
 
 #include <numeric>
 
@@ -509,6 +510,16 @@ void CMainDialog::OnBnClickedButtonStart()
 {
 	if (!magneto->isCompileEnded()) {
 		AfxMessageBox(L"Magneto data is not exist. Please setting the magneto protocol.");
+		return;
+	}
+
+	// Add Confirm Dialog
+	CString message;
+	message = !isStarted ? L"프로토콜을 시작하겠습니까?" : L"프로토콜을 중지하겠습니까?";
+
+	ConfirmDialog dialog(message);
+
+	if (dialog.DoModal() != IDOK) {
 		return;
 	}
 

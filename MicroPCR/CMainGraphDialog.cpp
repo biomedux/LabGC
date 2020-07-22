@@ -11,6 +11,7 @@
 #include "DeviceSetup.h"
 #include "FileManager.h"
 #include "ProgressThread.h"
+#include "ConfirmDialog.h"
 
 #include <numeric>
 
@@ -615,6 +616,17 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 		return;
 	}
 	
+	// Add Confirm Dialog
+	CString message;
+	message = !isStarted ? L"프로토콜을 시작하겠습니까?" : L"프로토콜을 중지하겠습니까?";
+
+	ConfirmDialog dialog(message);
+
+	if (dialog.DoModal() != IDOK) {
+		return;
+	}
+
+
 	// Disable start button
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 
