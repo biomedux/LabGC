@@ -370,6 +370,15 @@
     <Image Include="res\logo.png">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\icon2.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\biomedux.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CPlot Sources\CPlotResources.rc">

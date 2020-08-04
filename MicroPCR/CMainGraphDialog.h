@@ -17,6 +17,8 @@ class CMainGraphDialog : public CDialogEx
 	DECLARE_DYNAMIC(CMainGraphDialog)
 
 private:
+	CString m_strStylesPath;
+	HICON m_hIcon;
 	CMMTimers* m_Timer;
 	CDeviceConnect* device;
 	CMagneto* magneto;
@@ -138,6 +140,7 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
+	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnBnClickedButtonStart();
 	afx_msg void OnBnClickedButtonSetup();
 	afx_msg void OnLbnSelchangeComboProtocols();

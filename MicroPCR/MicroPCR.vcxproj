@@ -92,7 +92,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>.\CPlot Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\CPlot Sources;D:\Codejock Software\MFC\Xtreme Skin Framework v19.1.0\Source\Common;D:\Codejock Software\MFC\Xtreme Skin Framework v19.1.0\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -113,6 +113,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>D:\Codejock Software\MFC\Xtreme Skin Framework v19.1.0\Lib\vc160;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -219,12 +220,15 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\..\..\logo.png" />
+    <Image Include="res\biomedux.ico" />
     <Image Include="res\bitmap1.bmp" />
     <Image Include="res\bitmap2.bmp" />
     <Image Include="res\bmp00001.bmp" />
     <Image Include="res\cy5.bmp" />
     <Image Include="res\fam.bmp" />
     <Image Include="res\hex.bmp" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\icon2.ico" />
     <Image Include="res\logo.bmp" />
     <Image Include="res\logo.png" />
     <Image Include="res\MicroPCR.ico" />

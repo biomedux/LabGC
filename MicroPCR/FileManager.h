@@ -38,8 +38,8 @@ namespace FileManager
 	bool loadHistory(vector<History> & historyList);
 	bool saveHistory(vector<History>& historyList);
 
-	void log(CString msg);
-	void errorLog(CString msg, int count = -1);
+	void log(CString msg, long serialNumber);
+	void errorLog(CString msg, long serialNumber, int count = -1);
 
 	void loadFirmwareFile(CString & firmwareData);
 	void saveFirmwareFile(CString path, vector <CString>& firmwareData);

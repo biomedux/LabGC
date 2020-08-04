@@ -4,7 +4,6 @@
 //
 #define IDR_FIRMWARE_FILE               101
 #define IDD_MICROPCR_DIALOG             102
-#define IDR_MAINFRAME                   128
 #define IDB_BITMAP_REC_NOT_WORKING      132
 #define IDB_BITMAP_REC_WORKING          133
 #define IDD_PROGRESS_DIALOG             134
@@ -28,6 +27,8 @@
 #define IDD_DIALOG_CONFIRM              175
 #define IDD_DIALOG_MAIN_GRAPH           176
 #define IDD_DIALOG_PROGRESS             177
+#define IDI_ICON1                       189
+#define IDR_MAINFRAME                   189
 #define FIRMWARE_FILE                   256
 #define IDC_EDIT_DEVICE_STATUS          1000
 #define IDC_EDIT_PCR_STATUS             1000
@@ -205,7 +206,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        179
+#define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1107
 #define _APS_NEXT_SYMED_VALUE           101

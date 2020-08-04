@@ -153,10 +153,12 @@ namespace FileManager
 		return res;
 	}
 
-	void log(CString msg)
+	void log(CString msg, long serialNumber)
 	{
 		CTime time = CTime::GetCurrentTime();
-		static CString path = time.Format(L"./Log/%Y%m%d-%H%M-%S.txt");
+		static CString fileName = time.Format(L"%Y%m%d-%H%M-%S.txt");
+		CString path;
+		path.Format(L"./%06ld/Log/%s", serialNumber, fileName);
 
 		CStdioFile file;
 		CFileFind finder;
@@ -170,10 +172,11 @@ namespace FileManager
 		file.Close();
 	}
 
-	void errorLog(CString msg, int count) {
+	//200803 KBH added serialNumber parameter
+	void errorLog(CString msg, long serialNumber, int count) {
 		CTime time = CTime::GetCurrentTime();
-		CString path = L"errorLog.txt";
-
+		CString path;
+		path.Format(L"errorLog%06ld.txt", serialNumber);
 		CStdioFile file;
 		CFileFind finder;
 		if (finder.FindFile(path))

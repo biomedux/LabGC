@@ -12,7 +12,7 @@ using namespace std;
 #define GRAPH_MODE
 
 // Magneto 에 대한 EMULATOR 설정
-// #define EMULATOR  //KJD
+//#define EMULATOR  //KJD
 
 
 // Device VID, PID
@@ -20,6 +20,7 @@ using namespace std;
 #define LS4550EK_PID			0x0041
 
 // Capacity max device number
+
 #define DEVICE_MAX				0x08
 
 // Message Map

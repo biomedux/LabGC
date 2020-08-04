@@ -59,7 +59,12 @@ CMainDialog::CMainDialog(CWnd* pParent /*=nullptr*/)
 	, currentCycle(0)
 	, recordingCount(0)
 	, logStopped(false)
+	, m_strStylesPath(L"./")
 {
+	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+
+	XTPSkinManager()->SetApplyOptions(XTPSkinManager()->GetApplyOptions() | xtpSkinApplyMetrics);
+	XTPSkinManager()->LoadSkin(m_strStylesPath + _T("QuicksilverR.cjstyles"));
 
 }
 
@@ -110,6 +115,9 @@ BOOL CMainDialog::OnInitDialog()
 	SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Idle..");
 
 	progressStatus.SetRange(0, 100);
+
+	SetIcon(m_hIcon, TRUE);	 // set Large Icon
+	SetIcon(m_hIcon, FALSE); // set Small Icon
 
 	// Initialize the connection information
 	initConnection();
@@ -174,6 +182,29 @@ BOOL CMainDialog::PreTranslateMessage(MSG* pMsg)
 
 	return CDialogEx::PreTranslateMessage(pMsg);
 }
+void CMainDialog::OnPaint()
+{
+	CPaintDC dc(this);
+
+	if (IsIconic()) {
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+}
+
+HCURSOR CMainDialog::OnQueryDragIcon()
+{
+	return static_cast<HCURSOR>(m_hIcon);
+}
+
 
 static const int RESULT_TABLE_COLUMN_WIDTHS[2] = { 100, 130 };
 
@@ -458,6 +489,7 @@ void CMainDialog::OnBnClickedButtonConnect()
 				if (res) {
 					// Connection processing
 					isConnected = true;
+
 					SetDlgItemText(IDC_EDIT_CONNECTI_STATUS, L"Connected");
 					SetDlgItemText(IDC_BUTTON_CONNECT, L"Disconnect");
 					GetDlgItem(IDC_COMBO_DEVICE_LIST)->EnableWindow(FALSE);
@@ -515,13 +547,19 @@ void CMainDialog::OnBnClickedButtonStart()
 
 	// Add Confirm Dialog
 	CString message;
-	message = !isStarted ? L"프로토콜을 시작하겠습니까?" : L"프로토콜을 중지하겠습니까?";
+	message = !isStarted ? L"시작하겠습니까?" : L"중지하겠습니까?";
 
 	ConfirmDialog dialog(message);
 
 	if (dialog.DoModal() != IDOK) {
 		return;
 	}
+
+	if (IDYES == AfxMessageBox(message, MB_YESNO))
+	{
+
+	}
+
 
 	// Disable start button
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
@@ -1220,13 +1258,21 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 	resultTable.SetItem(&item);
 }
 
+// 200804 KBH change log file name 
 void CMainDialog::initLog() {
+	long serialNumber = magneto->getSerialNumber();
 	CreateDirectory(L"./Record/", NULL);
 
 	CString fileName, fileName2;
 	CTime time = CTime::GetCurrentTime();
-	fileName = time.Format(L"./Record/%Y%m%d-%H%M-%S.txt");
-	fileName2 = time.Format(L"./Record/pd%Y%m%d-%H%M-%S.txt");
+	CString currentTime = time.Format(L"%Y%m%d-%H%M-%S");
+	
+	// change file name
+	//fileName = time.Format(L"./Record/%Y%m%d-%H%M-%S.txt");
+	//fileName2 = time.Format(L"./Record/pd%Y%m%d-%H%M-%S.txt");
+
+	fileName.Format(L"./Record/log%06ld-%s.txt", serialNumber, currentTime);
+	fileName2.Format(L"./Record/log%06ld-pd%s.txt", serialNumber, currentTime);
 
 	m_recFile.Open(fileName, CStdioFile::modeCreate | CStdioFile::modeWrite);
 	m_recFile.WriteString(L"Number	Time	Temperature\n");
