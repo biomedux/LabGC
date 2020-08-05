@@ -61,8 +61,10 @@ CMainDialog::CMainDialog(CWnd* pParent /*=nullptr*/)
 	, logStopped(false)
 	, m_strStylesPath(L"./")
 {
+	// load icon
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
+	// set skin
 	XTPSkinManager()->SetApplyOptions(XTPSkinManager()->GetApplyOptions() | xtpSkinApplyMetrics);
 	XTPSkinManager()->LoadSkin(m_strStylesPath + _T("QuicksilverR.cjstyles"));
 

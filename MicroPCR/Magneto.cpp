@@ -709,7 +709,7 @@ void CMagneto::generateActionList(vector<ActionBeans> &returnValue)
 
 bool CMagneto::isLimitSwitchPushed()
 {
-	return true; //KJD 200804 limit switch가 아예 없으니까 이 기능을 없앤다.
+	return false; //KJD 200804 limit switch가 아예 없으니까 이 기능을 없앤다.
 	//// slave 들에 대해 limit switch 들을 체크해본다.
 	//EZISTEP_MINI_AXISSTATUS axisStatus;
 	//for (int i = 0; i < Magneto::MaxSlaves; ++i){
