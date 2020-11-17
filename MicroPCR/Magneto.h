@@ -156,7 +156,7 @@ namespace Magneto{
 #define M_CHAMBER_INTERVAL				4923	// chamber에 각 간격 사이//(float)27.692
 #define M_CHAMBER_STEP_PER_DEGREE		(float)(M_CHAMBER_GEAR_RATIO*M_CHAMBER_STEP_PER_REV/360)
 #define	M_CHAMBER_PUSLE2DEGREE(pulse)	(pulse / M_CHAMBER_STEP_PER_REV * 360)
-#define M_CHAMBER_SPEED					(int)16000//32000  //(int)16000  //KSY 챔버 회전 속도 
+#define M_CHAMBER_SPEED					(int)8000//32000  //(int)16000  //KSY 챔버 회전 속도 // 201117 KBH Chamber Speed 16000 -> 8000
 
 	// pumping axi
 #define PI								(float)3.141592
@@ -196,7 +196,7 @@ namespace Magneto{
 #define M_FILTER	0
 #define M_PUMPING	0
 #define M_FILTER_SPEED	(int)16000
-#define M_CHAMBER_SPEED	(int)16000//2500//(int)16000//32000 //(int)16000 //KSY 챔버 회전 속도 
+#define M_CHAMBER_SPEED	(int)8000//2500//(int)16000//32000 //(int)16000 //KSY 챔버 회전 속도 // 201117 KBH Chamber Speed 16000 -> 8000
 #define M_PUMPING_SPEED	(int)16000//(int)100000
 #define M_PUMPING_MIXING_SPEED	(int)16000//(int)100000
 #define M_PUMPING_READY_SPEED	(int)16000//
