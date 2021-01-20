@@ -518,7 +518,7 @@ void CMagneto::initDriverParameter() {
 		driverErrCnt++;
 		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::CHAMBER, 28, 1 error", getSerialNumber(), driverErrCnt);
 	}
-	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 0, 0) != FMM_OK) {		// rotate 축 resolution 변경(32000)
+	if (FAS_SetParameter(comPortNo, MotorType::CHAMBER, 0, 0) != FMM_OK) {		// rotate 축 resolution 변경(500)
 		driverErrCnt++;
 		FileManager::errorLog(L"initDriverParameter FAS_SetParameter MotorType::CHAMBER, 0, 0 error", getSerialNumber(), driverErrCnt);
 	}
@@ -707,22 +707,50 @@ void CMagneto::generateActionList(vector<ActionBeans> &returnValue)
 	}
 }
 
-bool CMagneto::isLimitSwitchPushed()
-{
-	return false; //KJD 200804 limit switch가 아예 없으니까 이 기능을 없앤다.
-	//// slave 들에 대해 limit switch 들을 체크해본다.
-	//EZISTEP_MINI_AXISSTATUS axisStatus;
-	//for (int i = 0; i < Magneto::MaxSlaves; ++i){
-	//	if (FAS_GetAxisStatus(comPortNo, i, &axisStatus.dwValue) != FMM_OK){
-	//		driverErrCnt++;
-	//		FileManager::errorLog(L"isLimitSwitchPushed FAS_GetAxisStatus error", getSerialNumber(), driverErrCnt);
-	//		return true;
-	//	}
-	//	if (axisStatus.FFLAG_HWPOSILMT || axisStatus.FFLAG_HWNEGALMT)
-	//		return true;
-	//}
+//211019 KBH remove unused code 
+//bool CMagneto::isLimitSwitchPushed()
+//{
+//	return false; //KJD 200804 limit switch가 아예 없으니까 이 기능을 없앤다.
+//	//// slave 들에 대해 limit switch 들을 체크해본다.
+//	//EZISTEP_MINI_AXISSTATUS axisStatus;
+//	//for (int i = 0; i < Magneto::MaxSlaves; ++i){
+//	//	if (FAS_GetAxisStatus(comPortNo, i, &axisStatus.dwValue) != FMM_OK){
+//	//		driverErrCnt++;
+//	//		FileManager::errorLog(L"isLimitSwitchPushed FAS_GetAxisStatus error", getSerialNumber(), driverErrCnt);
+//	//		return true;
+//	//	}
+//	//	if (axisStatus.FFLAG_HWPOSILMT || axisStatus.FFLAG_HWNEGALMT)
+//	//		return true;
+//	//}
+//
+//	//return false;
+//}
 
-	//return false;
+bool CMagneto::motorIsStucked()
+{
+	//// slave 들에 대해 Stuck를 체크해본다.
+	EZISTEP_MINI_AXISSTATUS axisStatus;
+
+	for (int i = 0; i < Magneto::MaxSlaves; ++i){
+		if (FAS_GetAxisStatus(comPortNo, i, &axisStatus.dwValue) != FMM_OK){
+			driverErrCnt++;
+			return true;
+		}
+		// fas_motor error (0x00000001)
+		if (axisStatus.FFLAG_ERRORALL)
+		{
+			// motor palus error (0x00000400)
+			if (axisStatus.FFLAG_ERRSTEPOUT)
+			{
+				FileManager::errorLog(L"motorIsStucked FFLAG_ERRSTEPOUT error", getSerialNumber(), driverErrCnt);
+			}
+
+			return true;
+		}
+	}
+
+	
+	return false;
 }
 
 bool CMagneto::isActionFinished()
@@ -938,6 +966,7 @@ void CMagneto::resetAction()
 	driverErrCnt = 0;
 	waitCounter = 0;
 	secondwaitCounter = 0;
+	
 }
 
 HWND CMagneto::getSafeHwnd(){
@@ -1010,7 +1039,15 @@ void CMagneto::start()
 
 bool CMagneto::runTask()
 {
-	if (isLimitSwitchPushed()) {
+	// 210119 KBH remove unused code 
+	//if (isLimitSwitchPushed()) {
+	//	stop();
+	//	return false;
+	//}
+
+	// 210119 KBH Motor Error check 
+	if (motorIsStucked())
+	{
 		stop();
 		return false;
 	}
@@ -1022,7 +1059,8 @@ bool CMagneto::runTask()
 	long tempPos = 0;
 	double cmdPos = 0.0, targetPos = 0.0;
 
-	if (FAS_GetCommandPos(comPortNo, ab.args[0], &tempPos) != FMM_OK) {
+	if (FAS_GetCommandPos(comPortNo, ab.args[0], &tempPos) != FMM_OK) 
+	{
 		driverErrCnt++;
 		
 		FileManager::errorLog(L"runTask - GetCommandPos error", getSerialNumber(), driverErrCnt);
@@ -1045,9 +1083,11 @@ bool CMagneto::runTask()
 	return true;
 }
 
-void CMagneto::stop(){
+void CMagneto::stop() {
 	if (isStarted)
+	{
 		FAS_AllEmergencyStop(comPortNo);
+	}
 
 	resetAction();
 	isStarted = false;

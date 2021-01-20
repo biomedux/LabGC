@@ -205,7 +205,7 @@ void CMainGraphDialog::initChart() {
 	axis->m_TitleFont.lfWidth = 20;
 	axis->m_TitleFont.lfHeight = 15;
 	axis->SetTitle(L"Sensor Value");
-	axis->SetRange(0, 4096);
+	axis->SetRange(-300, 4096);	// 210118 KBH Y-range lower : 0 -> -300
 
 	// Load bitmap
 	offImg.LoadBitmapW(IDB_BITMAP_OFF);
@@ -402,7 +402,17 @@ void CMainGraphDialog::loadProtocolList() {
 		AfxMessageBox(L"You need to make the protocol first.");
 	}
 }
+void CMainGraphDialog::initState()
+{
+	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
+	if (!magneto->isIdle()) {
+		magneto->stop();
+	}
+	
+	cleanupTask();
 
+	KillTimer(Magneto::TimerRuntaskID);
+}
 void CMainGraphDialog::loadMagnetoProtocol() {
 	// Getting the magneto data and check magneto data
 	CString magnetoProtocolRes = magneto->loadProtocolFromData(currentProtocol.magnetoData);
@@ -693,6 +703,7 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 		else {
 			// PCREndTask();
 			// Stop the magneto if running
+			
 			if (!magneto->isIdle()) {
 				magneto->stop();
 			}
@@ -713,7 +724,12 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 	{
 		if (!magneto->runTask()) {
 			KillTimer(Magneto::TimerRuntaskID);
-			AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+			// 210119 KBH remove unused code 
+			//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+
+			// 210119 KBH Motor Stucked
+			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
+			initState();	// 210120 KBH state initialize 
 			return;
 		}
 
@@ -734,9 +750,10 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 			else if (magneto->getCurrentfilter() == 6) {
 				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Lysis...");
 			}
-			else if (magneto->getCurrentfilter() == 10) {
-				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Mixing...");
-			}
+//			210118 KBH remobe progress status "Mixing"
+//			else if (magneto->getCurrentfilter() == 10) {
+//				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Mixing...");
+//			}
 			else if (magneto->getCurrentfilter() == 12) {
 				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Moving to PCR...");
 			}
@@ -753,7 +770,12 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 	else if (nIDEvent == Magneto::TimerCleanupTaskID) {
 		if (!magneto->runTask()) {
 			KillTimer(Magneto::TimerRuntaskID);
-			AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+			// 210119 KBH remove unused code 
+			//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+
+			// 210119 KBH Motor Stucked
+			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
+			initState();
 			return;
 		}
 
@@ -1184,8 +1206,10 @@ void CMainGraphDialog::cleanupTask() {
 	// Stop timer
 	m_Timer->stopTimer();
 
-	// Start cleanup timer
+	// 210120 KBH Magneto AlarmReset
+	magneto->Alarmreset();	
 
+	// Start cleanup timer
 	// Setting the home command
 	CString magnetoProtocolRes = magneto->loadProtocolFromData(L"home");
 
@@ -1474,7 +1498,7 @@ void CMainGraphDialog::clearChartValue() {
 	m_Chart.DeleteAllData();
 
 	CAxis* axis = m_Chart.GetAxisByLocation(kLocationLeft);
-	axis->SetRange(0, 4096);
+	axis->SetRange(-300, 4096);  // 210118 KBH Y-range lower : 0 -> -300
 
 	InvalidateRect(&CRect(15, 130, 470, 500));
 }

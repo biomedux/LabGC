@@ -536,7 +536,8 @@ public:
 
 	/** For Waiting operation		***************/
 public:
-	bool isLimitSwitchPushed();
+	//bool isLimitSwitchPushed(); // 210119 KBH remove unused code 
+	bool motorIsStucked(); // 210120 KBH check to  motor is stuck
 	HWND getSafeHwnd();
 	int getWaitingTime();
 	void setWaitEnded();

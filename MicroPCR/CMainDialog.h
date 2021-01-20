@@ -46,6 +46,7 @@ private:
 	void initPCRDevices();
 	void initConnection();
 	void initResultTable();
+	void initState(); // 210120 KBH initialize state function 
 
 	bool isProtocolLoaded;
 	bool isConnected;

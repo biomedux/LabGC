@@ -428,6 +428,21 @@ void CMainDialog::initPCRDevices() {
 	}
 }
 
+// 210120 KBH initialize state
+void CMainDialog::initState()
+{
+
+	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
+
+	if (!magneto->isIdle()) {
+		magneto->stop();
+	}
+
+	cleanupTask();
+
+	KillTimer(Magneto::TimerRuntaskID);
+}
+
 BOOL CMainDialog::OnDeviceChange(UINT nEventType, DWORD dwData) {
 	return TRUE;
 }
@@ -557,12 +572,6 @@ void CMainDialog::OnBnClickedButtonStart()
 		return;
 	}
 
-	if (IDYES == AfxMessageBox(message, MB_YESNO))
-	{
-
-	}
-
-
 	// Disable start button
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 
@@ -598,12 +607,18 @@ void CMainDialog::OnBnClickedButtonStart()
 			GetDlgItem(IDC_BUTTON_START)->EnableWindow(TRUE);
 		}
 		else {
-			GetDlgItem(IDC_COMBO_PROTOCOLS)->EnableWindow();
-			GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow();
-			SetDlgItemText(IDC_BUTTON_START, L"Start");
+			// 210120 KBH remove reduplication code 
+			//GetDlgItem(IDC_COMBO_PROTOCOLS)->EnableWindow();
+			//GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow();
+			//SetDlgItemText(IDC_BUTTON_START, L"Start");
 
+			// 210120 KBH click magneto state is idle
+			if (!magneto->isIdle()) {
+				magneto->stop();
+			}
 			// PCREndTask();
 			cleanupTask();
+			
 
 			KillTimer(Magneto::TimerRuntaskID);
 		}
@@ -613,13 +628,20 @@ void CMainDialog::OnBnClickedButtonStart()
 	}
 }
 
+
+
 void CMainDialog::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent == Magneto::TimerRuntaskID)
 	{
 		if (!magneto->runTask()) {
 			KillTimer(Magneto::TimerRuntaskID);
-			AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+			// 210119 KBH remove unused code 
+			//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+
+			// 210119 KBH Motor Stucked
+			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
+			initState();
 			return;
 		}
 
@@ -640,9 +662,10 @@ void CMainDialog::OnTimer(UINT_PTR nIDEvent)
 			else if (magneto->getCurrentfilter() == 6) {
 				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Lysis...");
 			}
-			else if (magneto->getCurrentfilter() == 10) {
-				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Mixing...");
-			}
+//			210118 KBH remove progress status "Mixing"
+//			else if (magneto->getCurrentfilter() == 10) {
+//				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Mixing...");
+//			}
 			else if (magneto->getCurrentfilter() == 12) {
 				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Moving to PCR...");
 			}
@@ -659,7 +682,12 @@ void CMainDialog::OnTimer(UINT_PTR nIDEvent)
 	else if (nIDEvent == Magneto::TimerCleanupTaskID) {
 		if (!magneto->runTask()) {
 			KillTimer(Magneto::TimerRuntaskID);
-			AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+			// 210119 KBH remove unused code 
+			//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+
+			// 210119 KBH Motor Stucked
+			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
+			initState();	// 210120 KBH state initialize 
 			return;
 		}
 
@@ -1085,6 +1113,8 @@ void CMainDialog::cleanupTask() {
 	// Stop timer
 	m_Timer->stopTimer();
 
+	magneto->Alarmreset();	// 210120 KBH Magneto AlarmReset
+
 	// Start cleanup timer
 	// Setting the home command
 	CString magnetoProtocolRes = magneto->loadProtocolFromData(L"home");
@@ -1134,6 +1164,7 @@ void CMainDialog::PCREndTask() {
 	GetDlgItem(IDC_COMBO_PROTOCOLS)->EnableWindow();
 	GetDlgItem(IDC_BUTTON_SETUP)->EnableWindow();
 	GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow();
+	GetDlgItem(IDC_BUTTON_START)->EnableWindow();	// 210120 KBH enable start button
 
 	SetDlgItemText(IDC_BUTTON_START, L"Start");
 	SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Idle..");
