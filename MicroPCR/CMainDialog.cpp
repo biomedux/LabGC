@@ -572,6 +572,39 @@ void CMainDialog::OnBnClickedButtonStart()
 		return;
 	}
 
+// 210203 KBH chip connection check 
+#ifndef EMULATOR
+	if (!isStarted)
+	{
+		RxBuffer rx;
+		TxBuffer tx;
+		float currentTemp = 0.0f;
+
+		memset(&rx, 0, sizeof(RxBuffer));
+		memset(&tx, 0, sizeof(TxBuffer));
+
+		tx.cmd = CMD_READY;
+
+		BYTE senddata[65] = { 0, };
+		BYTE readdata[65] = { 0, };
+		memcpy(senddata, &tx, sizeof(TxBuffer));
+
+		device->Write(senddata);
+
+		device->Read(&rx);
+
+		memcpy(readdata, &rx, sizeof(RxBuffer));
+		memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+
+		if (currentTemp <= 10.0f)
+		{
+			message = L"Low temperature! Chip connection check!";
+			AfxMessageBox(message);
+			return;
+		}
+	}
+#endif
+
 	// Disable start button
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 

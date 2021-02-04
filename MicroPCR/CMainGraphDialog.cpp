@@ -205,7 +205,9 @@ void CMainGraphDialog::initChart() {
 	axis->m_TitleFont.lfWidth = 20;
 	axis->m_TitleFont.lfHeight = 15;
 	axis->SetTitle(L"Sensor Value");
-	axis->SetRange(-300, 4096);	// 210118 KBH Y-range lower : 0 -> -300
+
+	axis->SetTickCount(8); // 210203 KBH tick count : 8
+	axis->SetRange(-512, 4096);	// 210203 KBH Y-range lower : 0 -> -512
 
 	// Load bitmap
 	offImg.LoadBitmapW(IDB_BITMAP_OFF);
@@ -655,14 +657,48 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 	
 	// Add Confirm Dialog
 	CString message;
+	
 	message = !isStarted ? L"프로토콜을 시작하겠습니까?" : L"프로토콜을 중지하겠습니까?";
 
 	ConfirmDialog dialog(message);
+
 
 	if (dialog.DoModal() != IDOK) {
 		return;
 	}
 
+// 210203 KBH chip connection check 
+#ifndef EMULATOR
+	if (!isStarted)
+	{
+		RxBuffer rx;
+		TxBuffer tx;
+		float currentTemp = 0.0f;
+
+		memset(&rx, 0, sizeof(RxBuffer));
+		memset(&tx, 0, sizeof(TxBuffer));
+
+		tx.cmd = CMD_READY;
+
+		BYTE senddata[65] = { 0, };
+		BYTE readdata[65] = { 0, };
+		memcpy(senddata, &tx, sizeof(TxBuffer));
+
+		device->Write(senddata);
+
+		device->Read(&rx);
+
+		memcpy(readdata, &rx, sizeof(RxBuffer));
+		memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+
+		if (currentTemp <= 10.0f)
+		{
+			message = L"Low temperature! Chip connection check!";
+			AfxMessageBox(message);
+			return;
+		}
+	}
+#endif
 
 	// Disable start button
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
@@ -1477,7 +1513,7 @@ void CMainGraphDialog::setChartValue() {
 		// Not use the range when the value is changed.
 		CAxis* axis = m_Chart.GetAxisByLocation(kLocationLeft);
 		// Not used maxY now
-		axis->SetRange(-displayDelta, maxY);
+		//axis->SetRange(-displayDelta, maxY);	// 210203 KBH Fixed Y range 
 
 		InvalidateRect(&CRect(15, 130, 470, 500));
 		Invalidate(FALSE);
@@ -1498,7 +1534,8 @@ void CMainGraphDialog::clearChartValue() {
 	m_Chart.DeleteAllData();
 
 	CAxis* axis = m_Chart.GetAxisByLocation(kLocationLeft);
-	axis->SetRange(-300, 4096);  // 210118 KBH Y-range lower : 0 -> -300
+	axis->SetTickCount(8); // 210203 KBH tick count : 8
+	axis->SetRange(-512, 4096);  // 210118 KBH Y-range lower : 0 -> -512
 
 	InvalidateRect(&CRect(15, 130, 470, 500));
 }
