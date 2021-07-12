@@ -78,6 +78,8 @@ CMainDialog::~CMainDialog()
 		delete m_Timer;
 	if (magneto != NULL)
 		delete magneto;
+	if (database != NULL)
+		sqlite3_close(database);
 }
 
 void CMainDialog::DoDataExchange(CDataExchange* pDX)
@@ -90,6 +92,7 @@ void CMainDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO_DEVICE_LIST, deviceList);
 	DDX_Control(pDX, IDC_PROGRESS_STATUS, progressStatus);
 	// progressStatus
+
 }
 
 
@@ -115,6 +118,8 @@ BOOL CMainDialog::OnInitDialog()
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 	SetDlgItemText(IDC_EDIT_CONNECTI_STATUS, L"Disconnected");
 	SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Idle..");
+	((CButton*)GetDlgItem(IDC_RADIO_GENDER_M))->SetCheck(True);
+	// 210707 KBH : Radio Button default check
 
 	progressStatus.SetRange(0, 100);
 
@@ -126,13 +131,16 @@ BOOL CMainDialog::OnInitDialog()
 
 	// initialize the device list
 	initPCRDevices();
+	
 
 	// Initialize UI
 	loadConstants();
 	loadProtocolList();
-
+	protocolList.EnableWindow(False); // 210709 KBH : disabled protocol list
 	initResultTable();
-
+	
+	initDatabaseTable();
+	
 #ifdef EMULATOR
 	AfxMessageBox(L"이 프로그램은 에뮬레이터 장비용 입니다.");
 #endif
@@ -212,7 +220,7 @@ static const int RESULT_TABLE_COLUMN_WIDTHS[2] = { 100, 130 };
 
 void CMainDialog::initResultTable() {
 	resultTable.SetListMode(true);
-
+	
 	resultTable.DeleteAllItems();
 
 	resultTable.SetRowCount(5);
@@ -571,38 +579,54 @@ void CMainDialog::OnBnClickedButtonStart()
 	if (dialog.DoModal() != IDOK) {
 		return;
 	}
+	// 210707 KBH : Controls disable 
+	GetDlgItem(IDC_EDIT_USER_ID)->EnableWindow(False);
+	GetDlgItem(IDC_EDIT_USER_NAME)->EnableWindow(False);
+	GetDlgItem(IDC_EDIT_AGE)->EnableWindow(False);
+	GetDlgItem(IDC_EDIT_INSPECTOR)->EnableWindow(False);
+	GetDlgItem(IDC_EDIT_SAMPLE_TYPE)->EnableWindow(False);
+	GetDlgItem(IDC_DATE_SAMPLE)->EnableWindow(False);
+	GetDlgItem(IDC_RADIO_GENDER_M)->EnableWindow(False);
+	GetDlgItem(IDC_RADIO_GENDER_F)->EnableWindow(False);
+	
 
 // 210203 KBH chip connection check 
 #ifndef EMULATOR
 	if (!isStarted)
 	{
-		RxBuffer rx;
-		TxBuffer tx;
-		float currentTemp = 0.0f;
 
-		memset(&rx, 0, sizeof(RxBuffer));
-		memset(&tx, 0, sizeof(TxBuffer));
+		float currentTemp;
 
-		tx.cmd = CMD_READY;
+		for (int i = 0; i < 5; ++i)
+		{
+			RxBuffer rx;
+			TxBuffer tx;
+			currentTemp = 0.0f;
 
-		BYTE senddata[65] = { 0, };
-		BYTE readdata[65] = { 0, };
-		memcpy(senddata, &tx, sizeof(TxBuffer));
+			memset(&rx, 0, sizeof(RxBuffer));
+			memset(&tx, 0, sizeof(TxBuffer));
 
-		device->Write(senddata);
+			tx.cmd = CMD_READY;
 
-		device->Read(&rx);
+			BYTE senddata[65] = { 0, };
+			BYTE readdata[65] = { 0, };
+			memcpy(senddata, &tx, sizeof(TxBuffer));
 
-		memcpy(readdata, &rx, sizeof(RxBuffer));
-		memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+			device->Write(senddata);
 
-		if (currentTemp <= 10.0f)
+			device->Read(&rx);
+
+			memcpy(readdata, &rx, sizeof(RxBuffer));
+			memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+			Sleep(TIMER_DURATION);
+		}
+		if (currentTemp < 10.0f)
 		{
 			message = L"Low temperature! Chip connection check!";
 			AfxMessageBox(message);
 			return;
 		}
-	}
+}
 #endif
 
 	// Disable start button
@@ -1210,25 +1234,48 @@ void CMainDialog::PCREndTask() {
 			CString dateTime;
 			dateTime.Format(L"%04d.%02d.%02d %02d:%02d:%02d", cTime.GetYear(), cTime.GetMonth(), cTime.GetDay(),
 				cTime.GetHour(), cTime.GetMinute(), cTime.GetSecond());
+			
+			// 210707 KBH : sqlite3에 사용될 변수들
+			// 정읍 보건소 용 CT&NG ct value and result 
+			CString ct_value, ng_value, ct_result, ng_result;
+			// Info data 
+			CString user_id, user_name, user_age, gender, inspector, sample_type, sample_date;
+			// sql query and dummy 
+			CString sql_query, dummy;
+
 
 			// result index
 			int resultIndex = 0;
 
 			if (currentProtocol.useFam) {
-				setCTValue(dateTime, sensorValuesFam, resultIndex++, 0);
+				setCTValue(dateTime, sensorValuesFam, resultIndex++, 0, ct_value, ct_result);
 			}
 			if (currentProtocol.useHex) {
-				setCTValue(dateTime, sensorValuesHex, resultIndex++, 1);
+				setCTValue(dateTime, sensorValuesHex, resultIndex++, 1, ng_value, ng_result);
 			}
 			if (currentProtocol.useRox) {
-				setCTValue(dateTime, sensorValuesRox, resultIndex++, 2);
+				setCTValue(dateTime, sensorValuesRox, resultIndex++, 2, dummy, dummy);
 			}
 			if (currentProtocol.useCY5) {
-				setCTValue(dateTime, sensorValuesCy5, resultIndex++, 3);
+				setCTValue(dateTime, sensorValuesCy5, resultIndex++, 3, dummy, dummy);
 			}
 
 			InvalidateRect(&CRect(226, 149, 453, 262));
 
+			// 210707 KBH : get info data and insert values in database
+			GetDlgItemText(IDC_EDIT_USER_ID, user_id);
+			GetDlgItemText(IDC_EDIT_USER_NAME, user_name);
+			GetDlgItemText(IDC_EDIT_AGE, user_age);
+			GetDlgItemText(IDC_EDIT_INSPECTOR, inspector);
+			GetDlgItemText(IDC_EDIT_SAMPLE_TYPE, sample_type);
+			((CDateTimeCtrl*)GetDlgItem(IDC_DATE_SAMPLE))->GetTime(cTime);
+			sample_date = cTime.Format("%Y-%m-%d");
+			gender = ((CButton*)GetDlgItem(IDC_RADIO_GENDER_M))->GetCheck() ? L"M" : L"F";
+			
+			sql_query.Format(L"\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"", user_id, user_name, user_age, gender, inspector, sample_type, sample_date, ct_value, ng_value, ct_result, ng_result);
+			insertFieldValue(sql_query);
+			
+			
 			AfxMessageBox(L"PCR ended!!");
 		}
 		else AfxMessageBox(L"PCR incomplete!!");
@@ -1237,6 +1284,17 @@ void CMainDialog::PCREndTask() {
 	{
 		AfxMessageBox(L"Emergency stop!(overheating)");
 	}
+
+
+	// 210707 KBH : Controls Enabled
+	GetDlgItem(IDC_EDIT_USER_ID)->EnableWindow();
+	GetDlgItem(IDC_EDIT_USER_NAME)->EnableWindow();
+	GetDlgItem(IDC_EDIT_AGE)->EnableWindow();
+	GetDlgItem(IDC_EDIT_INSPECTOR)->EnableWindow();
+	GetDlgItem(IDC_EDIT_SAMPLE_TYPE)->EnableWindow();
+	GetDlgItem(IDC_DATE_SAMPLE)->EnableWindow();
+	GetDlgItem(IDC_RADIO_GENDER_M)->EnableWindow();
+	GetDlgItem(IDC_RADIO_GENDER_F)->EnableWindow();
 
 	emergencyStop = false;
 	isCompletePCR = false;
@@ -1247,7 +1305,8 @@ void CMainDialog::PCREndTask() {
 
 static CString filterTable[4] = { L"FAM", L"HEX", L"ROX", L"CY5" };
 
-void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex) {
+// 210707 KBH : append parameters (Ct value and result text)
+void CMainDialog::setCTValue(CString dateTime, vector<double>&sensorValue, int resultIndex, int filterIndex, CString& val, CString& rst) {
 	// save the result and setting the result
 	CString result = L"FAIL";
 	CString ctText = L"";
@@ -1255,7 +1314,11 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 
 	// ignore the data when the data is over the 10
 	int idx = sensorValue.size();
-
+	float temp = 0.697 * flRelativeMax / 10.;
+	float temp2 = log(temp);
+	CString str;
+	str.Format(L"%f", temp2);
+	AfxMessageBox(str);
 	// If the idx is under the 10, fail
 	if (idx >= 10) {
 		// BaseMean value
@@ -1302,6 +1365,7 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 			else {
 				result = L"Positive";
 			}
+			
 		}
 	}
 
@@ -1319,9 +1383,15 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 	item.nFormat = DT_CENTER | DT_WORDBREAK;
 
 	item.strText = result;
-
+	
 	// resultTable.SetItemFont(item.row, item.col, )
 	resultTable.SetItem(&item);
+	// return result 
+
+	// KBH : return ctText and result (database)
+	val = ctText;
+	rst = result;
+
 }
 
 // 200804 KBH change log file name 
@@ -1357,4 +1427,117 @@ void CMainDialog::clearLog() {
 	if (m_recPDFile != NULL) {
 		m_recPDFile.Close();
 	}
+}
+
+// 210707 KBH : encoding function to utf8 (sqlite3 is using only utf8 format)
+static char* utf8_encode(const char* src)
+{
+	size_t len;
+	char* result;
+	wchar_t* tempBuf;
+	if (src == NULL)  return NULL;
+
+	len = strlen(src);
+	result = (char*)malloc(len * 3 + 1);
+
+	if (result == NULL)  return NULL;
+
+	tempBuf = (wchar_t*)alloca((len + 1) * sizeof(wchar_t));
+	MultiByteToWideChar(CP_ACP, 0, src, -1, tempBuf, (int)len);
+
+	tempBuf[len] = 0;
+	{
+		wchar_t* s = tempBuf;  BYTE* d = (BYTE*)result;
+		while (*s)
+		{
+			int U = *s++;
+			if (U < 0x80) {
+				*d++ = (BYTE)U;
+			}
+			else if (U < 0x800) {
+				*d++ = 0xC0 + ((U >> 6) & 0x3F);
+				*d++ = 0x80 + (U & 0x003F);
+			}
+			else {
+				*d++ = 0xE0 + (U >> 12);
+				*d++ = 0x80 + ((U >> 6) & 0x3F);
+				*d++ = 0x80 + (U & 0x3F);
+			}
+		}
+		*d = 0;
+	}
+	return result;
+}
+
+// 210707 KBH : create History table if not exists Hitory table 
+void CMainDialog::initDatabaseTable()
+{
+	USES_CONVERSION;
+	sqlite3_stmt* stmt;
+	const char* sql_query;
+
+	sql_query = "CREATE TABLE IF NOT EXISTS History("
+		"id integer not null primary key autoincrement,"
+		"_datetime datetime default (datetime('now', 'localtime')),"
+		"user_id text not null, user_name text not null, user_age int not null, gender text not null,"
+		"inspector text not null, sample_type text not null, sample_date date default (date('now', 'localtime')),"
+		"CTv text not null, NGv text not null, CT text not null, NG text not null);"; 
+	// check if database file exists
+	int rst = sqlite3_open("./testRecord.db", &database);
+
+	if (rst != SQLITE_OK)
+	{
+		CString SQLERR;
+		SQLERR.Format(L"Can't open database: %s", sqlite3_errmsg(database));
+		AfxMessageBox(SQLERR);
+		sqlite3_free(szErrMsg);
+		sqlite3_close(database);
+		database = NULL;
+
+	}
+	else
+	{
+		rst = sqlite3_exec(database, sql_query, NULL, NULL, &szErrMsg);
+		if (rst != SQLITE_OK)
+		{	
+			CString SQLERR;
+			SQLERR.Format(L"Can't create table: %s", sqlite3_errmsg(database));
+			AfxMessageBox(SQLERR);
+			sqlite3_free(szErrMsg);
+			sqlite3_close(database);
+			database = NULL;
+		}
+	}
+}
+
+// 210707 KBH : Insert Value in Database
+void CMainDialog::insertFieldValue(CString values)
+{
+	// encoding 문제 발생 
+	int rst = sqlite3_open("./testRecord.db", &database);
+
+	if (rst != SQLITE_OK)
+	{
+		CString SQLERR;
+		SQLERR.Format(L"Can't open database: %s", sqlite3_errmsg(database));
+		AfxMessageBox(SQLERR);
+		sqlite3_free(szErrMsg);
+		sqlite3_close(database);
+		database = NULL;
+
+	}
+	else
+	{
+		CString sql_temp;
+		sql_temp.Format(_T("INSERT INTO History (user_id, user_name, user_age, gender, inspector, sample_type, sample_date, CTv, NGv, CT, NG) values ( %s )"), values);
+		
+		USES_CONVERSION;
+		const char* sql = T2A(sql_temp);
+
+		sqlite3_exec(database, utf8_encode(sql), NULL, NULL, &szErrMsg);
+
+		sqlite3_close(database);
+
+	}
+	
 }

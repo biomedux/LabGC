@@ -540,7 +540,6 @@ namespace FileManager
 	bool loadHistory(vector<History>& historyList) {
 		CFile file;
 		bool res = false;
-
 		historyList.clear();
 
 		if (file.Open(L"./History.data", CFile::modeRead))
@@ -548,7 +547,7 @@ namespace FileManager
 			CArchive ar(&file, CArchive::load);
 			CString version;
 			int size = 0;
-
+			
 			try {
 				ar >> version;
 
@@ -583,7 +582,7 @@ namespace FileManager
 
 			res = true;
 		}
-
+		
 		return res;
 	}
 
@@ -686,4 +685,6 @@ namespace FileManager
 		result = _ttof(line);
 		return result;
 	}
+
+	
 };

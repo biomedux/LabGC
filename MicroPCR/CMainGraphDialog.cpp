@@ -667,31 +667,37 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 		return;
 	}
 
-// 210203 KBH chip connection check 
+// 210506 KBH chip connection check logic changed	//210203 KBH chip connection check 
 #ifndef EMULATOR
 	if (!isStarted)
 	{
-		RxBuffer rx;
-		TxBuffer tx;
-		float currentTemp = 0.0f;
+		
+		float currentTemp;
 
-		memset(&rx, 0, sizeof(RxBuffer));
-		memset(&tx, 0, sizeof(TxBuffer));
+		for (int i = 0; i < 5; ++i)
+		{
+			RxBuffer rx;
+			TxBuffer tx;
+			currentTemp = 0.0f;
 
-		tx.cmd = CMD_READY;
+			memset(&rx, 0, sizeof(RxBuffer));
+			memset(&tx, 0, sizeof(TxBuffer));
 
-		BYTE senddata[65] = { 0, };
-		BYTE readdata[65] = { 0, };
-		memcpy(senddata, &tx, sizeof(TxBuffer));
+			tx.cmd = CMD_READY;
 
-		device->Write(senddata);
+			BYTE senddata[65] = { 0, };
+			BYTE readdata[65] = { 0, };
+			memcpy(senddata, &tx, sizeof(TxBuffer));
 
-		device->Read(&rx);
+			device->Write(senddata);
+			
+			device->Read(&rx);
 
-		memcpy(readdata, &rx, sizeof(RxBuffer));
-		memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
-
-		if (currentTemp <= 10.0f)
+			memcpy(readdata, &rx, sizeof(RxBuffer));
+			memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+			Sleep(TIMER_DURATION);
+		}
+		if (currentTemp < 10.0f)
 		{
 			message = L"Low temperature! Chip connection check!";
 			AfxMessageBox(message);
@@ -758,7 +764,9 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent == Magneto::TimerRuntaskID)
 	{
-		if (!magneto->runTask()) {
+		// 210203 KBH chip connection check 
+		if (!magneto->runTask()) 
+		{
 			KillTimer(Magneto::TimerRuntaskID);
 			// 210119 KBH remove unused code 
 			//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
@@ -768,7 +776,7 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 			initState();	// 210120 KBH state initialize 
 			return;
 		}
-
+		
 		// Progress
 		progressStatus.SetPos(magneto->getCurrentActionNumber());
 
@@ -778,6 +786,9 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Washing 1...");
 			}
 			else if (magneto->getCurrentfilter() == 2) {
+
+
+
 				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Washing 2...");
 			}
 			else if (magneto->getCurrentfilter() == 5) {

@@ -121,20 +121,25 @@
 #define IDC_EDIT_PCR_SERIAL_NUMBER      1036
 #define IDC_STATIC_SAVE_LABEL           1037
 #define IDC_EDIT_MAGNETO_SERIAL_NUMBER  1037
+#define IDC_EDIT_USER_ID                1038
 #define IDC_CHECK_TEMP_GRAPH            1039
 #define IDC_EDIT_DISPLAY_DELTA          1039
+#define IDC_EDIT_INSPECTOR              1039
 #define IDC_EDIT_COMPENSATION           1040
+#define IDC_EDIT_USER_NAME              1040
 #define IDC_EDIT2                       1041
 #define IDC_EDIT_PHOTODIODE             1041
 #define IDC_EDIT_CT_FAM                 1041
 #define IDC_EDIT_PASSWORD_INPUT         1041
 #define IDC_EDIT_FILTER_FAM             1041
+#define IDC_EDIT_AGE                    1041
 #define IDC_COMBO_MAGNETO               1042
 #define IDC_EDIT_CT_HEX                 1042
 #define IDC_EDIT_FILTER_HEX             1042
 #define IDC_COMBO_ARDUINO               1043
 #define IDC_EDIT_CT_ROX                 1043
 #define IDC_EDIT_FILTER_ROX             1043
+#define IDC_EDIT_SAMPLE_TYPE            1043
 #define IDC_EDIT_CT_CY5                 1044
 #define IDC_EDIT_FILTER_CY5             1044
 #define IDC_EDIT_Y_TARGET               1045
@@ -177,6 +182,7 @@
 #define IDC_BUTTON_EDIT_PROTOCOL        1081
 #define IDC_RADIO_PROTOCOL_LABEL        1081
 #define IDC_BUTTON_RESET_DEVICE         1081
+#define IDC_RADIO_GENDER_M              1081
 #define IDC_COMBO_DEVICE_LIST           1082
 #define IDC_BUTTON_PROTOCOL_CANCEL      1082
 #define IDC_BUTTON_SET_MAGNETO_SERIAL   1082
@@ -188,6 +194,7 @@
 #define IDC_STATIC_PROGRESS_REMAINING_TIME 1085
 #define IDC_COMBO_PROTOCOLS             1086
 #define IDC_CUSTOM_PID_SETUP_TABLE      1087
+#define IDC_RADIO_GENDER_F              1087
 #define IDC_LIST_PROTOCOL               1088
 #define IDC_BUTTON_ADD_PROTOCOL         1089
 #define IDC_CUSTOM_PID_SETUP_TABLE2     1090
@@ -201,6 +208,7 @@
 #define IDC_STATIC_CONFIRM_MESSAGE      1104
 #define IDC_EDIT_CURRENT_TEMP           1105
 #define IDC_PROGRESS                    1106
+#define IDC_DATE_SAMPLE                 1107
 
 // Next default values for new objects
 // 
@@ -208,7 +216,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1107
+#define _APS_NEXT_CONTROL_VALUE         1108
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1390,7 +1390,6 @@ void CMicroPCRDlg::makeDatabaseTable(CString path)
 	m_SQLs[5] = "CREATE TABLE PHOTODIODE		(_table_no	INTEGER DEFAULT 5,	pd_cycle	INTEGER,	pd_time	REAL,	pd_value_fam	REAL DEFAULT 0,	pd_value_hex	REAL DEFAULT 0,	pd_value_rox	REAL DEFAULT 0,	pd_value_cy5	REAL DEFAULT 0 )";
 	m_SQLs[6] = "CREATE TABLE TEMPER_PD_RAW		( _table_no	INTEGER DEFAULT 6,	temper_time	REAL,	temper_cycle	INTEGER,	temper_value	REAL,	pd_raw_cycle	INTEGER,	pd_raw_value	REAL)";
 	int sql_length = sizeof(m_SQLs) / sizeof(const char*);
-	
 	int rst = sqlite3_open(m_Path, &pSQLite3);
 	if (rst)
 	{
@@ -1485,22 +1484,20 @@ void CMicroPCRDlg::insertFieldValue(CString tableName, CString field, CString va
 void CMicroPCRDlg::OnBnClickedButtonStart()
 {
 	CString labgFilePath;
-
 	filter_flag = (&m_form_main)->filters;
 	if (!filter_flag[0] && !filter_flag[1] && !filter_flag[2] && !filter_flag[3]) 
 	{
 		AfxMessageBox(L"Invalid start options!!\nplease checking the at least one option.");
 		return;
 	}
-
+	
 	if (!file_created)
 	{
 		CFileDialog m_fDlg(FALSE, _T("*.labg"), _T(".labg"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR, _T("LabGenius files (*.labg)|*.labg|"), NULL);
-
+		
 		if (m_fDlg.DoModal() == IDOK)
 		{
 			labgFilePath = m_fDlg.GetPathName();
-
 			if (m_fDlg.GetFileName().GetLength() > 5)
 			{
 				makeDatabaseTable(labgFilePath);	// labg(sqlite db) 颇老 积己 棺 抛捞喉 积己

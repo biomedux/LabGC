@@ -2,6 +2,7 @@
 
 #include "Chart.h"
 #include "mmtimers.h"
+#include "FileManager.h"
 
 #include "Magneto.h"
 #include "DeviceConnect.h"
@@ -99,7 +100,7 @@ private:
 	void PCREndTask();
 
 	int currentCycle;
-	void setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex);
+	void setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex, CString& val, CString& rst);
 
 	// For log
 	CStdioFile m_recFile, m_recPDFile;
@@ -109,6 +110,13 @@ private:
 	void clearLog();
 	bool logStopped;
 
+	// 210707 KBH : History Database setting 
+	// SQLite 선언 
+	sqlite3* database; // SQLite DB object 
+	char* szErrMsg;	// Error 발생시 메세지를 저장하는 변수
+	void CMainDialog::initDatabaseTable();
+	void CMainDialog::insertFieldValue(CString values);
+	
 public:
 	CMainDialog(CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~CMainDialog();
@@ -134,6 +142,8 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	virtual LRESULT OnmmTimer(WPARAM wParam, LPARAM lParam);
 	
+	
+
 
 	// Device change map
 	BOOL OnDeviceChange(UINT nEventType, DWORD dwData);
