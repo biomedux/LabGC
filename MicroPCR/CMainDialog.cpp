@@ -133,10 +133,9 @@ BOOL CMainDialog::OnInitDialog()
 	initPCRDevices();
 	
 
-	// Initialize UI
+	// Initialize UIf
 	loadConstants();
 	loadProtocolList();
-	protocolList.EnableWindow(False); // 210709 KBH : disabled protocol list
 	initResultTable();
 	
 	initDatabaseTable();
@@ -580,54 +579,55 @@ void CMainDialog::OnBnClickedButtonStart()
 		return;
 	}
 	// 210707 KBH : Controls disable 
-	GetDlgItem(IDC_EDIT_USER_ID)->EnableWindow(False);
-	GetDlgItem(IDC_EDIT_USER_NAME)->EnableWindow(False);
-	GetDlgItem(IDC_EDIT_AGE)->EnableWindow(False);
-	GetDlgItem(IDC_EDIT_INSPECTOR)->EnableWindow(False);
-	GetDlgItem(IDC_EDIT_SAMPLE_TYPE)->EnableWindow(False);
-	GetDlgItem(IDC_DATE_SAMPLE)->EnableWindow(False);
-	GetDlgItem(IDC_RADIO_GENDER_M)->EnableWindow(False);
-	GetDlgItem(IDC_RADIO_GENDER_F)->EnableWindow(False);
+	GetDlgItem(IDC_EDIT_USER_ID)->SendMessage(EM_SETREADONLY, true, 0);
+
+	GetDlgItem(IDC_EDIT_USER_NAME)->SendMessage(EM_SETREADONLY, true, 0);
+	GetDlgItem(IDC_EDIT_AGE)->SendMessage(EM_SETREADONLY, true, 0);
+	GetDlgItem(IDC_EDIT_INSPECTOR)->SendMessage(EM_SETREADONLY, true, 0);
+	GetDlgItem(IDC_EDIT_SAMPLE_TYPE)->SendMessage(EM_SETREADONLY, true, 0);
+	GetDlgItem(IDC_DATE_SAMPLE)->EnableWindow(false);
+	GetDlgItem(IDC_RADIO_GENDER_M)->EnableWindow(false);
+	GetDlgItem(IDC_RADIO_GENDER_F)->EnableWindow(false);
 	
-
-// 210203 KBH chip connection check 
-#ifndef EMULATOR
-	if (!isStarted)
-	{
-
-		float currentTemp;
-
-		for (int i = 0; i < 5; ++i)
-		{
-			RxBuffer rx;
-			TxBuffer tx;
-			currentTemp = 0.0f;
-
-			memset(&rx, 0, sizeof(RxBuffer));
-			memset(&tx, 0, sizeof(TxBuffer));
-
-			tx.cmd = CMD_READY;
-
-			BYTE senddata[65] = { 0, };
-			BYTE readdata[65] = { 0, };
-			memcpy(senddata, &tx, sizeof(TxBuffer));
-
-			device->Write(senddata);
-
-			device->Read(&rx);
-
-			memcpy(readdata, &rx, sizeof(RxBuffer));
-			memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
-			Sleep(TIMER_DURATION);
-		}
-		if (currentTemp < 10.0f)
-		{
-			message = L"Low temperature! Chip connection check!";
-			AfxMessageBox(message);
-			return;
-		}
-}
-#endif
+// 210714 KBH : delete Chip connection check logic
+//// 210203 KBH chip connection check 
+//#ifndef EMULATOR
+//	if (!isStarted)
+//	{
+//
+//		float currentTemp;
+//
+//		for (int i = 0; i < 5; ++i)
+//		{
+//			RxBuffer rx;
+//			TxBuffer tx;
+//			currentTemp = 0.0f;
+//
+//			memset(&rx, 0, sizeof(RxBuffer));
+//			memset(&tx, 0, sizeof(TxBuffer));
+//
+//			tx.cmd = CMD_READY;
+//
+//			BYTE senddata[65] = { 0, };
+//			BYTE readdata[65] = { 0, };
+//			memcpy(senddata, &tx, sizeof(TxBuffer));
+//
+//			device->Write(senddata);
+//
+//			device->Read(&rx);
+//
+//			memcpy(readdata, &rx, sizeof(RxBuffer));
+//			memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+//			Sleep(TIMER_DURATION);
+//		}
+//		if (currentTemp < 10.0f)
+//		{
+//			message = L"Low temperature! Chip connection check!";
+//			AfxMessageBox(message);
+//			return;
+//		}
+//}
+//#endif
 
 	// Disable start button
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
@@ -698,7 +698,7 @@ void CMainDialog::OnTimer(UINT_PTR nIDEvent)
 
 			// 210119 KBH Motor Stucked
 			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
-			initState();
+			initState(); // 210120 KBH state initialize 
 			return;
 		}
 
@@ -1287,14 +1287,30 @@ void CMainDialog::PCREndTask() {
 
 
 	// 210707 KBH : Controls Enabled
-	GetDlgItem(IDC_EDIT_USER_ID)->EnableWindow();
+	/*GetDlgItem(IDC_EDIT_USER_ID)->EnableWindow();
 	GetDlgItem(IDC_EDIT_USER_NAME)->EnableWindow();
 	GetDlgItem(IDC_EDIT_AGE)->EnableWindow();
 	GetDlgItem(IDC_EDIT_INSPECTOR)->EnableWindow();
 	GetDlgItem(IDC_EDIT_SAMPLE_TYPE)->EnableWindow();
 	GetDlgItem(IDC_DATE_SAMPLE)->EnableWindow();
 	GetDlgItem(IDC_RADIO_GENDER_M)->EnableWindow();
+	GetDlgItem(IDC_RADIO_GENDER_F)->EnableWindow();*/
+
+	GetDlgItem(IDC_EDIT_USER_ID)->SendMessage(EM_SETREADONLY, false, 0);
+
+	GetDlgItem(IDC_EDIT_USER_NAME)->SendMessage(EM_SETREADONLY, false, 0);
+	GetDlgItem(IDC_EDIT_AGE)->SendMessage(EM_SETREADONLY, false, 0);
+	GetDlgItem(IDC_EDIT_INSPECTOR)->SendMessage(EM_SETREADONLY, false, 0);
+	GetDlgItem(IDC_EDIT_SAMPLE_TYPE)->SendMessage(EM_SETREADONLY, false, 0);
+	GetDlgItem(IDC_DATE_SAMPLE)->EnableWindow();
+	GetDlgItem(IDC_RADIO_GENDER_M)->EnableWindow();
 	GetDlgItem(IDC_RADIO_GENDER_F)->EnableWindow();
+
+	// 210714 KBH : reset SersorValues 
+	sensorValuesFam.clear();
+	sensorValuesHex.clear();
+	sensorValuesRox.clear();
+	sensorValuesCy5.clear();
 
 	emergencyStop = false;
 	isCompletePCR = false;
@@ -1314,11 +1330,7 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>&sensorValue, int r
 
 	// ignore the data when the data is over the 10
 	int idx = sensorValue.size();
-	float temp = 0.697 * flRelativeMax / 10.;
-	float temp2 = log(temp);
-	CString str;
-	str.Format(L"%f", temp2);
-	AfxMessageBox(str);
+	
 	// If the idx is under the 10, fail
 	if (idx >= 10) {
 		// BaseMean value
@@ -1348,7 +1360,9 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>&sensorValue, int r
 		}
 
 		if (idx >= sensorValue.size() || idx <= 0) {
-			result = L"Not detected";
+			// 210714 KBH : Change "Not detected" to "Negative"
+			//result = L"Not detected"; 
+			result = L"Negative";
 		}
 		else {
 			double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };

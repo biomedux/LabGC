@@ -786,9 +786,6 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Washing 1...");
 			}
 			else if (magneto->getCurrentfilter() == 2) {
-
-
-
 				SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Washing 2...");
 			}
 			else if (magneto->getCurrentfilter() == 5) {
@@ -1584,13 +1581,13 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 		}
 
 		for (int i = 0; i < sensorValue.size(); ++i) {
-			if (log(sensorValue[i] - baseMean) > logThreshold) {
+			if (log(sensorValue[i] - baseMean) > logThreshold) { // sensorValue[1] >>>> 
 				idx = i;
 				break;
 			}
 		}
 
-		if (idx >= sensorValue.size() || idx <= 0) {
+		if (idx >= sensorValue.size() || idx <= 0) { 
 			result = L"Not detected";
 		}
 		else {
@@ -1646,7 +1643,6 @@ void CMainGraphDialog::initLog() {
 	// change file name
 	//fileName = time.Format(L"./Record/%Y%m%d-%H%M-%S.txt");
 	//fileName2 = time.Format(L"./Record/pd%Y%m%d-%H%M-%S.txt");
-
 	fileName.Format(L"./Record/log%06ld-%s.txt", serialNumber, currentTime);
 	fileName2.Format(L"./Record/log%06ld-pd%s.txt", serialNumber, currentTime);
 	
