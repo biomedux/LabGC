@@ -177,6 +177,7 @@
 #define IDC_BUTTON_EDIT_PROTOCOL        1081
 #define IDC_RADIO_PROTOCOL_LABEL        1081
 #define IDC_BUTTON_RESET_DEVICE         1081
+#define IDC_RADIO_GENDER_M              1081
 #define IDC_COMBO_DEVICE_LIST           1082
 #define IDC_BUTTON_PROTOCOL_CANCEL      1082
 #define IDC_BUTTON_SET_MAGNETO_SERIAL   1082
@@ -188,6 +189,7 @@
 #define IDC_STATIC_PROGRESS_REMAINING_TIME 1085
 #define IDC_COMBO_PROTOCOLS             1086
 #define IDC_CUSTOM_PID_SETUP_TABLE      1087
+#define IDC_RADIO_GENDER_F              1087
 #define IDC_LIST_PROTOCOL               1088
 #define IDC_BUTTON_ADD_PROTOCOL         1089
 #define IDC_CUSTOM_PID_SETUP_TABLE2     1090
@@ -201,6 +203,20 @@
 #define IDC_STATIC_CONFIRM_MESSAGE      1104
 #define IDC_EDIT_CURRENT_TEMP           1105
 #define IDC_PROGRESS                    1106
+#define IDC_EDIT_USER_ID                1107
+#define IDC_EDIT_USER_NAME              1108
+#define IDC_EDIT_USER_AGE               1109
+#define IDC_EDIT_INSPECTOR              1110
+#define IDC_EDIT_SAMPLE_TYPE            1112
+#define IDC_GROUP_CONNECTION            1114
+#define IDC_GROUP_PROGESS               1115
+#define IDC_GROUP_INFO                  1116
+#define IDC_GROUP_DEAVICE               1117
+#define IDC_GROUP_PROTOCOL              1118
+#define IDC_GROUP_CT                    1119
+#define IDC_GROUP_RESULT                1120
+#define IDC_DATE_SAMPLE                 1121
+#define IDC_STATIC_PLOT                 1122
 
 // Next default values for new objects
 // 
@@ -208,7 +224,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1107
+#define _APS_NEXT_CONTROL_VALUE         1123
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

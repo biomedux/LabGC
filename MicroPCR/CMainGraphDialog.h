@@ -2,6 +2,7 @@
 
 #include "Chart.h"
 #include "mmtimers.h"
+#include "FileManager.h"
 
 #include "Magneto.h"
 #include "DeviceConnect.h"
@@ -110,7 +111,9 @@ private:
 	void initProtocol();
 	void setChartValue();
 	void clearChartValue();
-	void setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex);
+	// 210910 KBH append parameters (Ct value and result text)  
+	//void setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex);
+	void setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex, CString& val, CString& rst);
 
 	// For log
 	CStdioFile m_recFile, m_recPDFile;
@@ -125,6 +128,13 @@ private:
 	bool useRox;
 	bool useCy5;
 
+	CRect m_graphRect;
+	// 210910 KBH : History Database Setting
+	// SQLite 선언 
+	sqlite3* database;
+	char* szErrMsg;
+	void CMainGraphDialog::initDatabaseTable();
+	void CMainGraphDialog::insertFieldValue(CString values);
 public:
 	CMainGraphDialog(CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~CMainGraphDialog();

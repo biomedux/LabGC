@@ -743,9 +743,8 @@ bool CMagneto::motorIsStucked()
 			if (axisStatus.FFLAG_ERRSTEPOUT)
 			{
 				FileManager::errorLog(L"motorIsStucked FFLAG_ERRSTEPOUT error", getSerialNumber(), driverErrCnt);
+				return true;
 			}
-
-			return true;
 		}
 	}
 

@@ -33,6 +33,8 @@ public:
 	COLORREF	m_TitleColor;	// color to use for title
 	BOOL		m_RangeSet;		// has the range been set?
 
+	int m_ytickPos[9]; // 210910 KJD 
+
 	CAxis();
 	~CAxis();
 	void	SetDefaults( void );

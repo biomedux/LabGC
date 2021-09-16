@@ -238,6 +238,7 @@ void	CAxis::OnDraw( CDC *pDC, CRect clientRect, CRect chartRect, CRect updateRec
 						pDC->DrawText( tickLabel, (LPRECT)&textRect, textMode );
 						break;
 				case kLocationLeft: case kLocationRight:
+					position = m_ytickPos[i]; // 210830 KJD position 을 array 값으로 재정의
 					// Major Tick marks
 					startPoint = (GetLocation()==kLocationLeft?chartRect.left:chartRect.right);
 					
@@ -250,6 +251,7 @@ void	CAxis::OnDraw( CDC *pDC, CRect clientRect, CRect chartRect, CRect updateRec
 					
 					// Minor tick marks
 					if( i <= this->GetTickCount() )
+						/* 210830 KJD minor tick은 없앤다
 						for( j = 1; j < this->GetMinorTickCount(); j++ )
 						{
 							tickPoint.y = chartRect.bottom - (long)((position-m_Range[0]+j*tickScale) * scale);
@@ -258,13 +260,17 @@ void	CAxis::OnDraw( CDC *pDC, CRect clientRect, CRect chartRect, CRect updateRec
 							tickPoint.x += minorTickMarkLength;
 							pDC->LineTo( tickPoint );
 						}
+						*/
 						
 						// Tick labels
 						tickPoint.y = chartRect.bottom - (long)((position-m_Range[0]) * scale);
 						tickPoint.x = startPoint - sign*tickMarkLength/2;
 						textRect.left = textRect.right = tickPoint.x;
 						textRect.top = textRect.bottom = tickPoint.y;
-						tickLabel = GetTickLabel( i );
+
+						//tickLabel = GetTickLabel( i ); 
+						tickLabel.Format(L"%d", m_ytickPos[i]); // 210830 KJD label을 array에 있는 값으로 대치
+
 						pDC->DrawText( tickLabel, (LPRECT)&textRect, textMode );
 						labelExtent = pDC->GetTextExtent( tickLabel );
 						if( labelExtent.cx > tickHeight ) tickHeight = labelExtent.cx;

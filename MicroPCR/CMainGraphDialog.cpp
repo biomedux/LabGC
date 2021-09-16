@@ -120,6 +120,8 @@ BOOL CMainGraphDialog::OnInitDialog()
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 	SetDlgItemText(IDC_EDIT_CONNECTI_STATUS, L"Disconnected");
 	SetDlgItemText(IDC_STATIC_PROGRESS_STATUS, L"Idle..");
+	// 210910 KBH set Default Gender
+	((CButton*)GetDlgItem(IDC_RADIO_GENDER_M))->SetCheck(True);
 
 	progressStatus.SetRange(0, 100);
 
@@ -140,6 +142,9 @@ BOOL CMainGraphDialog::OnInitDialog()
 	loadProtocolList();
 
 	initResultTable();
+
+	// 210910 KBH initialize database table
+	initDatabaseTable();
 
 #ifdef EMULATOR
 	AfxMessageBox(L"이 프로그램은 에뮬레이터 장비용 입니다.");
@@ -204,10 +209,24 @@ void CMainGraphDialog::initChart() {
 	axis = m_Chart.AddAxis(kLocationLeft);
 	axis->m_TitleFont.lfWidth = 20;
 	axis->m_TitleFont.lfHeight = 15;
-	axis->SetTitle(L"Sensor Value");
+	
+	// 210910 KBH chage tick range
+	//axis->SetTitle(L"Sensor Value");
 
-	axis->SetTickCount(8); // 210203 KBH tick count : 8
-	axis->SetRange(-512, 4096);	// 210203 KBH Y-range lower : 0 -> -512
+	//axis->SetTickCount(8); // 210203 KBH tick count : 8
+	//axis->SetRange(-512, 4096);	// 210203 KBH Y-range lower : 0 -> -512
+	
+	//210830 KJD Setting Axis and m_Chart
+	axis->SetRange(-100, 1600);
+	axis->SetTickCount(3);
+	axis->m_ytickPos[0] = 0;
+	axis->m_ytickPos[1] = 500;
+	axis->m_ytickPos[2] = 1000;
+	axis->m_ytickPos[3] = 1500;
+	m_Chart.m_UseMajorVerticalGrids = TRUE;
+	m_Chart.m_UseMajorHorizontalGrids = TRUE;
+	m_Chart.m_MajorGridLineStyle = PS_DOT;
+	m_Chart.m_BackgroundColor = GetSysColor(COLOR_3DFACE);
 
 	// Load bitmap
 	offImg.LoadBitmapW(IDB_BITMAP_OFF);
@@ -220,6 +239,15 @@ void CMainGraphDialog::initChart() {
 	SET_BUTTON_IMAGE(IDC_BUTTON_FILTER_HEX, offImg);
 	SET_BUTTON_IMAGE(IDC_BUTTON_FILTER_ROX, offImg);
 	SET_BUTTON_IMAGE(IDC_BUTTON_FILTER_CY5, offImg);
+
+	// 210910 KBH calc graph rect (IDC_GROUP_CONNECTION(right, top), IDC_GROUP_CT(right, top) ->  Graph(left, top, right, bottom)
+	// static position -> dynamic position 
+	
+	GetDlgItem(IDC_STATIC_PLOT)->GetWindowRect(&m_graphRect);
+	ScreenToClient(&m_graphRect);
+
+	CPaintDC dc(this); 
+	dc.DPtoLP((LPPOINT)&m_graphRect, 2);
 }
 
 void CMainGraphDialog::OnPaint() {
@@ -241,9 +269,10 @@ void CMainGraphDialog::OnPaint() {
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else {
-		CRect graphRect;
+		CRect graphRect(m_graphRect.left, m_graphRect.top, m_graphRect.right, m_graphRect.bottom);
+
 		int oldMode = dc.SetMapMode(MM_LOMETRIC);
-		graphRect.SetRect(15, 130, 470, 500);
+		//graphRect.SetRect(15, 130, 470, 500); // 210910 KBH static position -> dynamic position 
 
 		dc.DPtoLP((LPPOINT)&graphRect, 2);
 		CDC* dc2 = CDC::FromHandle(dc.m_hDC);
@@ -448,7 +477,9 @@ void CMainGraphDialog::loadConstants() {
 
 	CAxis* axis = m_Chart.GetAxisByLocation(kLocationBottom);
 	axis->SetRange(0, maxCycles);
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500)); // 210910 KBH using graphRect 
+	InvalidateRect(&m_graphRect, FALSE);
+
 }
 
 void CMainGraphDialog::OnLbnSelchangeComboProtocols() {
@@ -667,38 +698,50 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 		return;
 	}
 
-// 210203 KBH chip connection check 
-#ifndef EMULATOR
-	if (!isStarted)
-	{
-		RxBuffer rx;
-		TxBuffer tx;
-		float currentTemp = 0.0f;
+	// 210910 KBH  deactivate Controls what inside group Info
+	GetDlgItem(IDC_EDIT_USER_ID)->SendMessage(EM_SETREADONLY, true, 0);
 
-		memset(&rx, 0, sizeof(RxBuffer));
-		memset(&tx, 0, sizeof(TxBuffer));
+	GetDlgItem(IDC_EDIT_USER_NAME)->SendMessage(EM_SETREADONLY, true, 0);
+	GetDlgItem(IDC_EDIT_USER_AGE)->SendMessage(EM_SETREADONLY, true, 0);
+	GetDlgItem(IDC_EDIT_INSPECTOR)->SendMessage(EM_SETREADONLY, true, 0);
+	GetDlgItem(IDC_EDIT_SAMPLE_TYPE)->SendMessage(EM_SETREADONLY, true, 0);
+	GetDlgItem(IDC_DATE_SAMPLE)->EnableWindow(false);
+	GetDlgItem(IDC_RADIO_GENDER_M)->EnableWindow(false);
+	GetDlgItem(IDC_RADIO_GENDER_F)->EnableWindow(false);
 
-		tx.cmd = CMD_READY;
 
-		BYTE senddata[65] = { 0, };
-		BYTE readdata[65] = { 0, };
-		memcpy(senddata, &tx, sizeof(TxBuffer));
-
-		device->Write(senddata);
-
-		device->Read(&rx);
-
-		memcpy(readdata, &rx, sizeof(RxBuffer));
-		memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
-
-		if (currentTemp <= 10.0f)
-		{
-			message = L"Low temperature! Chip connection check!";
-			AfxMessageBox(message);
-			return;
-		}
-	}
-#endif
+// 210203 KBH chip connection check -> 210910 KBH remove chip connection check logic
+//#ifndef EMULATOR
+//	if (!isStarted)
+//	{
+//		RxBuffer rx;
+//		TxBuffer tx;
+//		float currentTemp = 0.0f;
+//
+//		memset(&rx, 0, sizeof(RxBuffer));
+//		memset(&tx, 0, sizeof(TxBuffer));
+//
+//		tx.cmd = CMD_READY;
+//
+//		BYTE senddata[65] = { 0, };
+//		BYTE readdata[65] = { 0, };
+//		memcpy(senddata, &tx, sizeof(TxBuffer));
+//
+//		device->Write(senddata);
+//
+//		device->Read(&rx);
+//
+//		memcpy(readdata, &rx, sizeof(RxBuffer));
+//		memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+//
+//		if (currentTemp <= 10.0f)
+//		{
+//			message = L"Low temperature! Chip connection check!";
+//			AfxMessageBox(message);
+//			return;
+//		}
+//	}
+//#endif
 
 	// Disable start button
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
@@ -1312,24 +1355,47 @@ void CMainGraphDialog::PCREndTask() {
 			dateTime.Format(L"%04d.%02d.%02d %02d:%02d:%02d", cTime.GetYear(), cTime.GetMonth(), cTime.GetDay(),
 				cTime.GetHour(), cTime.GetMinute(), cTime.GetSecond());
 
+			// 210910 KBH : sqlite3에 사용될 변수들
+			// 공주 보건소 CT&NG ct value and result 
+			CString ct_value, ng_value, ct_result, ng_result;
+			// Info data 
+			CString user_id, user_name, user_age, gender, inspector, sample_type, sample_date;
+			// sql query and dummy 
+			CString sql_query, dummy;
+
 			// result index
 			int resultIndex = 0;
 
 			if (currentProtocol.useFam) {
-				setCTValue(dateTime, sensorValuesFam, resultIndex++, 0);
+				setCTValue(dateTime, sensorValuesFam, resultIndex++, 0, ct_value, ct_result);
 			}
 			if (currentProtocol.useHex) {
-				setCTValue(dateTime, sensorValuesHex, resultIndex++, 1);
+				setCTValue(dateTime, sensorValuesHex, resultIndex++, 1, ng_value, ng_result);
 			}
 			if (currentProtocol.useRox) {
-				setCTValue(dateTime, sensorValuesRox, resultIndex++, 2);
+				setCTValue(dateTime, sensorValuesRox, resultIndex++, 2, dummy, dummy);
 			}
 			if (currentProtocol.useCY5) {
-				setCTValue(dateTime, sensorValuesCy5, resultIndex++, 3);
+				setCTValue(dateTime, sensorValuesCy5, resultIndex++, 3, dummy, dummy);
 			}
+			
+			// 210913 KBH get result table rect
+			//InvalidateRect(&CRect(226, 655, 456, 768));
+			CRect table_rect;
+			GetDlgItem(IDC_CUSTOM_RESULT_TABLE)->GetWindowRect(&table_rect);
+			InvalidateRect(&table_rect);
 
-			InvalidateRect(&CRect(226, 655, 456, 768));
+			GetDlgItemText(IDC_EDIT_USER_ID, user_id);
+			GetDlgItemText(IDC_EDIT_USER_NAME, user_name);
+			GetDlgItemText(IDC_EDIT_USER_AGE, user_age);
+			GetDlgItemText(IDC_EDIT_INSPECTOR, inspector);
+			GetDlgItemText(IDC_EDIT_SAMPLE_TYPE, sample_type);
+			((CDateTimeCtrl*)GetDlgItem(IDC_DATE_SAMPLE))->GetTime(cTime);
+			sample_date = cTime.Format("%Y-%m-%d");
+			gender = ((CButton*)GetDlgItem(IDC_RADIO_GENDER_M))->GetCheck() ? L"M" : L"F";
 
+			sql_query.Format(L"\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"", user_id, user_name, user_age, gender, inspector, sample_type, sample_date, ct_value, ng_value, ct_result, ng_result);
+			insertFieldValue(sql_query);
 			AfxMessageBox(L"PCR ended!!");
 		}
 		else AfxMessageBox(L"PCR incomplete!!");
@@ -1338,6 +1404,18 @@ void CMainGraphDialog::PCREndTask() {
 	{
 		AfxMessageBox(L"Emergency stop!(overheating)");
 	}
+
+	// 210910 KBH  activate Controls what inside group Info
+	GetDlgItem(IDC_EDIT_USER_ID)->SendMessage(EM_SETREADONLY, false, 0);
+
+	GetDlgItem(IDC_EDIT_USER_NAME)->SendMessage(EM_SETREADONLY, false, 0);
+	GetDlgItem(IDC_EDIT_USER_AGE)->SendMessage(EM_SETREADONLY, false, 0);
+	GetDlgItem(IDC_EDIT_INSPECTOR)->SendMessage(EM_SETREADONLY, false, 0);
+	GetDlgItem(IDC_EDIT_SAMPLE_TYPE)->SendMessage(EM_SETREADONLY, false, 0);
+	GetDlgItem(IDC_DATE_SAMPLE)->EnableWindow();
+	GetDlgItem(IDC_RADIO_GENDER_M)->EnableWindow();
+	GetDlgItem(IDC_RADIO_GENDER_F)->EnableWindow();
+
 
 	emergencyStop = false;
 	isCompletePCR = false;
@@ -1515,7 +1593,9 @@ void CMainGraphDialog::setChartValue() {
 		// Not used maxY now
 		//axis->SetRange(-displayDelta, maxY);	// 210203 KBH Fixed Y range 
 
-		InvalidateRect(&CRect(15, 130, 470, 500));
+		//InvalidateRect(&CRect(15, 130, 470, 500)); // 210910 KBH using graphRect 
+		InvalidateRect(&m_graphRect, FALSE);
+
 		Invalidate(FALSE);
 	}
 }
@@ -1534,15 +1614,19 @@ void CMainGraphDialog::clearChartValue() {
 	m_Chart.DeleteAllData();
 
 	CAxis* axis = m_Chart.GetAxisByLocation(kLocationLeft);
-	axis->SetTickCount(8); // 210203 KBH tick count : 8
-	axis->SetRange(-512, 4096);  // 210118 KBH Y-range lower : 0 -> -512
+	// 210910 KBH remove update y axis ticks 
+	//axis->SetTickCount(8); // 210203 KBH tick count : 8
+	//axis->SetRange(-512, 4096);  // 210118 KBH Y-range lower : 0 -> -512
 
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500)); // 210910 KBH using graphRect 
+	InvalidateRect(&m_graphRect, FALSE);
+
 }
 
 static CString filterTable[4] = { L"FAM", L"HEX", L"ROX", L"CY5" };
 
-void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex) {
+// 210910 KBH append parameters (Ct value and result text) 
+void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int resultIndex, int filterIndex, CString& val, CString& rst) {
 	// save the result and setting the result
 	CString result = L"FAIL";
 	CString ctText = L"";
@@ -1580,7 +1664,9 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 		}
 
 		if (idx >= sensorValue.size() || idx <= 0) {
-			result = L"Not detected";
+			// 210910 KBH : Change "Not detected" to "Negative"
+			//result = L"Not detected"; 
+			result = L"Negative";
 		}
 		else {
 			double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };
@@ -1621,6 +1707,10 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 
 	// resultTable.SetItemFont(item.row, item.col, )
 	resultTable.SetItem(&item);
+
+	// 210910 KBH : return ctText and result (database)
+	val = ctText;
+	rst = result;
 }
 
 // 200804 KBH change log file name 
@@ -1671,7 +1761,9 @@ void CMainGraphDialog::OnBnClickedButtonFilterFam()
 	}
 
 	setChartValue();
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500)); // 210910 KBH using graphRect 
+	InvalidateRect(&m_graphRect, FALSE);
+
 }
 
 
@@ -1686,7 +1778,9 @@ void CMainGraphDialog::OnBnClickedButtonFilterHex()
 	}
 
 	setChartValue();
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500)); // 210910 KBH using graphRect 
+	InvalidateRect(&m_graphRect, FALSE);
+
 }
 
 
@@ -1701,7 +1795,9 @@ void CMainGraphDialog::OnBnClickedButtonFilterRox()
 	}
 
 	setChartValue();
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500)); // 210910 KBH using graphRect 
+	InvalidateRect(&m_graphRect, FALSE);
+
 }
 
 
@@ -1716,5 +1812,120 @@ void CMainGraphDialog::OnBnClickedButtonFilterCy5()
 	}
 
 	setChartValue();
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500)); // 210910 KBH using graphRect 
+	InvalidateRect(&m_graphRect, FALSE);
+
+}
+
+
+// 210910 KBH : encoding function to utf8 (sqlite3 is using only utf8 format)
+static char* utf8_encode(const char* src)
+{
+	size_t len;
+	char* result;
+	wchar_t* tempBuf;
+	if (src == NULL)  return NULL;
+
+	len = strlen(src);
+	result = (char*)malloc(len * 3 + 1);
+
+	if (result == NULL)  return NULL;
+
+	tempBuf = (wchar_t*)alloca((len + 1) * sizeof(wchar_t));
+	MultiByteToWideChar(CP_ACP, 0, src, -1, tempBuf, (int)len);
+
+	tempBuf[len] = 0;
+	{
+		wchar_t* s = tempBuf;  BYTE* d = (BYTE*)result;
+		while (*s)
+		{
+			int U = *s++;
+			if (U < 0x80) {
+				*d++ = (BYTE)U;
+			}
+			else if (U < 0x800) {
+				*d++ = 0xC0 + ((U >> 6) & 0x3F);
+				*d++ = 0x80 + (U & 0x003F);
+			}
+			else {
+				*d++ = 0xE0 + (U >> 12);
+				*d++ = 0x80 + ((U >> 6) & 0x3F);
+				*d++ = 0x80 + (U & 0x3F);
+			}
+		}
+		*d = 0;
+	}
+	return result;
+}
+
+// 210910 KBH : create History table if not exists Hitory table 
+void CMainGraphDialog::initDatabaseTable()
+{
+	USES_CONVERSION;
+	sqlite3_stmt* stmt;
+	const char* sql_query;
+
+	sql_query = "CREATE TABLE IF NOT EXISTS History("
+		"id integer not null primary key autoincrement,"
+		"_datetime datetime default (datetime('now', 'localtime')),"
+		"user_id text not null, user_name text not null, user_age int not null, gender text not null,"
+		"inspector text not null, sample_type text not null, sample_date date default (date('now', 'localtime')),"
+		"CTv text not null, NGv text not null, CT text not null, NG text not null);";
+	// check if database file exists
+	int rst = sqlite3_open("./testRecord.db", &database);
+
+	if (rst != SQLITE_OK)
+	{
+		CString SQLERR;
+		SQLERR.Format(L"Can't open database: %s", sqlite3_errmsg(database));
+		AfxMessageBox(SQLERR);
+		sqlite3_free(szErrMsg);
+		sqlite3_close(database);
+		database = NULL;
+
+	}
+	else
+	{
+		rst = sqlite3_exec(database, sql_query, NULL, NULL, &szErrMsg);
+		if (rst != SQLITE_OK)
+		{
+			CString SQLERR;
+			SQLERR.Format(L"Can't create table: %s", sqlite3_errmsg(database));
+			AfxMessageBox(SQLERR);
+			sqlite3_free(szErrMsg);
+			sqlite3_close(database);
+			database = NULL;
+		}
+	}
+}
+
+// 210910 KBH : Insert Value in Database
+void CMainGraphDialog::insertFieldValue(CString values)
+{
+	int rst = sqlite3_open("./testRecord.db", &database);
+
+	if (rst != SQLITE_OK)
+	{
+		CString SQLERR;
+		SQLERR.Format(L"Can't open database: %s", sqlite3_errmsg(database));
+		AfxMessageBox(SQLERR);
+		sqlite3_free(szErrMsg);
+		sqlite3_close(database);
+		database = NULL;
+
+	}
+	else
+	{
+		CString sql_temp;
+		sql_temp.Format(_T("INSERT INTO History (user_id, user_name, user_age, gender, inspector, sample_type, sample_date, CTv, NGv, CT, NG) values ( %s )"), values);
+
+		USES_CONVERSION;
+		const char* sql = T2A(sql_temp);
+
+		sqlite3_exec(database, utf8_encode(sql), NULL, NULL, &szErrMsg);
+
+		sqlite3_close(database);
+
+	}
+
 }

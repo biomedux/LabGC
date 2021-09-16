@@ -1,6 +1,6 @@
 #pragma once
 #include "UserDefs.h"
-
+#include ".\Lib\Sqlite3.h"
 #define RECENT_PID_PATH			L"Recent_PID.txt"
 #define RECENT_PROTOCOL_PATH	L"Recent_Protocol.txt"
 
