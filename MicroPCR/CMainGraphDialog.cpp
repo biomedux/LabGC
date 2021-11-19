@@ -204,10 +204,26 @@ void CMainGraphDialog::initChart() {
 	axis = m_Chart.AddAxis(kLocationLeft);
 	axis->m_TitleFont.lfWidth = 20;
 	axis->m_TitleFont.lfHeight = 15;
-	axis->SetTitle(L"Sensor Value");
 
-	axis->SetTickCount(8); // 210203 KBH tick count : 8
-	axis->SetRange(-512, 4096);	// 210203 KBH Y-range lower : 0 -> -512
+	// 210910 KBH change tick range
+	//axis->SetTitle(L"Sensor Value");
+
+	//axis->SetTickCount(8); // 210203 KBH tick count : 8
+	//axis->SetRange(-512, 4096);	// 210203 KBH Y-range lower : 0 -> -512
+
+	//210830 KJD Setting Axis and m_Chart
+	axis->SetRange(-100, 2600);
+	axis->SetTickCount(5);
+	axis->m_ytickPos[0] = 0;
+	axis->m_ytickPos[1] = 500;
+	axis->m_ytickPos[2] = 1000;
+	axis->m_ytickPos[3] = 1500;
+	axis->m_ytickPos[4] = 2000;
+	axis->m_ytickPos[5] = 2500;
+	m_Chart.m_UseMajorVerticalGrids = TRUE;
+	m_Chart.m_UseMajorHorizontalGrids = TRUE;
+	m_Chart.m_MajorGridLineStyle = PS_DOT;
+	m_Chart.m_BackgroundColor = GetSysColor(COLOR_3DFACE);
 
 	// Load bitmap
 	offImg.LoadBitmapW(IDB_BITMAP_OFF);
@@ -220,6 +236,12 @@ void CMainGraphDialog::initChart() {
 	SET_BUTTON_IMAGE(IDC_BUTTON_FILTER_HEX, offImg);
 	SET_BUTTON_IMAGE(IDC_BUTTON_FILTER_ROX, offImg);
 	SET_BUTTON_IMAGE(IDC_BUTTON_FILTER_CY5, offImg);
+
+	// 210910 KBH calc graph rect (IDC_GROUP_CONNECTION(right, top), IDC_GROUP_CT(right, top) ->  Graph(left, top, right, bottom)
+	// static position -> dynamic position 
+
+	GetDlgItem(IDC_STATIC_PLOT)->GetWindowRect(&m_graphRect);
+	ScreenToClient(&m_graphRect);
 }
 
 void CMainGraphDialog::OnPaint() {
@@ -241,9 +263,10 @@ void CMainGraphDialog::OnPaint() {
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else {
-		CRect graphRect;
+		CRect graphRect(&m_graphRect); // copy CRect
+
 		int oldMode = dc.SetMapMode(MM_LOMETRIC);
-		graphRect.SetRect(15, 130, 470, 500);
+		//graphRect.SetRect(15, 130, 470, 500); 211117 KBH static position -> dynamic position 
 
 		dc.DPtoLP((LPPOINT)&graphRect, 2);
 		CDC* dc2 = CDC::FromHandle(dc.m_hDC);
@@ -448,7 +471,8 @@ void CMainGraphDialog::loadConstants() {
 
 	CAxis* axis = m_Chart.GetAxisByLocation(kLocationBottom);
 	axis->SetRange(0, maxCycles);
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500));
+	InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position 
 }
 
 void CMainGraphDialog::OnLbnSelchangeComboProtocols() {
@@ -655,43 +679,46 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 		return;
 	}
 	
-	// Add Confirm Dialog
+	// 211117 KBH change dialog (using AfxMessageBox)
 	CString message;
-	
 	message = !isStarted ? L"프로토콜을 시작하겠습니까?" : L"프로토콜을 중지하겠습니까?";
-
-	ConfirmDialog dialog(message);
-
-
-	if (dialog.DoModal() != IDOK) {
+	
+	if (AfxMessageBox(message, MB_YESNO | MB_ICONQUESTION) != IDYES) {
 		return;
 	}
 
-// 210203 KBH chip connection check 
+
+// 211117 KBH chip connection check 
+//(5번째 read_buffer 에 온도 값이 10도 이하일 경우 PCR Chip Connection Error)
 #ifndef EMULATOR
 	if (!isStarted)
 	{
-		RxBuffer rx;
-		TxBuffer tx;
-		float currentTemp = 0.0f;
+		float currentTemp;
 
-		memset(&rx, 0, sizeof(RxBuffer));
-		memset(&tx, 0, sizeof(TxBuffer));
+		for (int i = 0; i < 5; ++i)
+		{
+			RxBuffer rx;
+			TxBuffer tx;
+			currentTemp = 0.0f;
 
-		tx.cmd = CMD_READY;
+			memset(&rx, 0, sizeof(RxBuffer));
+			memset(&tx, 0, sizeof(TxBuffer));
 
-		BYTE senddata[65] = { 0, };
-		BYTE readdata[65] = { 0, };
-		memcpy(senddata, &tx, sizeof(TxBuffer));
+			tx.cmd = CMD_READY;
 
-		device->Write(senddata);
+			BYTE senddata[65] = { 0, };
+			BYTE readdata[65] = { 0, };
+			memcpy(senddata, &tx, sizeof(TxBuffer));
 
-		device->Read(&rx);
+			device->Write(senddata);
 
-		memcpy(readdata, &rx, sizeof(RxBuffer));
-		memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+			device->Read(&rx);
 
-		if (currentTemp <= 10.0f)
+			memcpy(readdata, &rx, sizeof(RxBuffer));
+			memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+			Sleep(TIMER_DURATION);
+		}
+		if (currentTemp < 10.0f)
 		{
 			message = L"Low temperature! Chip connection check!";
 			AfxMessageBox(message);
@@ -765,7 +792,10 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 
 			// 210119 KBH Motor Stucked
 			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
-			initState();	// 210120 KBH state initialize 
+			
+			exit(0); // 211117 KBH if motor is stuck, program exit
+			//initState();	// 210120 KBH state initialize 
+			
 			return;
 		}
 
@@ -805,13 +835,18 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 	}
 	else if (nIDEvent == Magneto::TimerCleanupTaskID) {
 		if (!magneto->runTask()) {
-			KillTimer(Magneto::TimerRuntaskID);
+			// 211119 KBH Timer kill CleanupTask
+			//KillTimer(Magneto::TimerRuntaskID); 
+			KillTimer(Magneto::TimerCleanupTaskID);
 			// 210119 KBH remove unused code 
 			//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
 
 			// 210119 KBH Motor Stucked
 			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
-			initState();
+
+			exit(0); // 211117 KBH if motor is stuck, program exit
+			//initState();	// 210120 KBH state initialize 
+			
 			return;
 		}
 
@@ -1339,6 +1374,12 @@ void CMainGraphDialog::PCREndTask() {
 		AfxMessageBox(L"Emergency stop!(overheating)");
 	}
 
+	// 211117 KBH reset SersorValues 
+	sensorValuesFam.clear();
+	sensorValuesHex.clear();
+	sensorValuesRox.clear();
+	sensorValuesCy5.clear();
+
 	emergencyStop = false;
 	isCompletePCR = false;
 
@@ -1515,7 +1556,8 @@ void CMainGraphDialog::setChartValue() {
 		// Not used maxY now
 		//axis->SetRange(-displayDelta, maxY);	// 210203 KBH Fixed Y range 
 
-		InvalidateRect(&CRect(15, 130, 470, 500));
+		//InvalidateRect(&CRect(15, 130, 470, 500));
+		InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position
 		Invalidate(FALSE);
 	}
 }
@@ -1534,10 +1576,13 @@ void CMainGraphDialog::clearChartValue() {
 	m_Chart.DeleteAllData();
 
 	CAxis* axis = m_Chart.GetAxisByLocation(kLocationLeft);
-	axis->SetTickCount(8); // 210203 KBH tick count : 8
-	axis->SetRange(-512, 4096);  // 210118 KBH Y-range lower : 0 -> -512
 
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	// 210910 KBH remove update y axis ticks
+	//axis->SetTickCount(8); // 210203 KBH tick count : 8
+	//axis->SetRange(-512, 4096);  // 210118 KBH Y-range lower : 0 -> -512
+
+	//InvalidateRect(&CRect(15, 130, 470, 500));
+	InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position 
 }
 
 static CString filterTable[4] = { L"FAM", L"HEX", L"ROX", L"CY5" };
@@ -1572,7 +1617,8 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 			logThreshold = tempLogThreshold;
 		}
 
-		for (int i = 0; i < sensorValue.size(); ++i) {
+		// 211119 KBH start index change (i = 0 -> i = 11)
+		for (int i = 11; i < sensorValue.size(); ++i) {
 			if (log(sensorValue[i] - baseMean) > logThreshold) {
 				idx = i;
 				break;
@@ -1580,7 +1626,9 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 		}
 
 		if (idx >= sensorValue.size() || idx <= 0) {
-			result = L"Not detected";
+			// 210714 KBH Change "Not detected" to "Negative"
+			//result = L"Not detected";
+			result = L"Negative";
 		}
 		else {
 			double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };
@@ -1671,7 +1719,8 @@ void CMainGraphDialog::OnBnClickedButtonFilterFam()
 	}
 
 	setChartValue();
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500));
+	InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position
 }
 
 
@@ -1686,7 +1735,8 @@ void CMainGraphDialog::OnBnClickedButtonFilterHex()
 	}
 
 	setChartValue();
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500));
+	InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position
 }
 
 
@@ -1701,7 +1751,8 @@ void CMainGraphDialog::OnBnClickedButtonFilterRox()
 	}
 
 	setChartValue();
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500));
+	InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position 
 }
 
 
@@ -1716,5 +1767,6 @@ void CMainGraphDialog::OnBnClickedButtonFilterCy5()
 	}
 
 	setChartValue();
-	InvalidateRect(&CRect(15, 130, 470, 500));
+	//InvalidateRect(&CRect(15, 130, 470, 500));
+	InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position
 }

@@ -564,39 +564,45 @@ void CMainDialog::OnBnClickedButtonStart()
 
 	// Add Confirm Dialog
 	CString message;
-	message = !isStarted ? L"시작하겠습니까?" : L"중지하겠습니까?";
+	message = !isStarted ? L"프로토콜을 시작하겠습니까?" : L"프로토콜을 중지하겠습니까?";
 
-	ConfirmDialog dialog(message);
-
-	if (dialog.DoModal() != IDOK) {
+	// 211111 KBH change dialog
+	if (AfxMessageBox(message, MB_YESNO | MB_ICONQUESTION) != IDYES) {
 		return;
 	}
 
-// 210203 KBH chip connection check 
+
+// 211117 KBH chip connection check 
+//(5번째 read_buffer 에 온도 값이 10도 이하일 경우 PCR Chip Connection Error)
 #ifndef EMULATOR
 	if (!isStarted)
 	{
-		RxBuffer rx;
-		TxBuffer tx;
-		float currentTemp = 0.0f;
+		float currentTemp;
 
-		memset(&rx, 0, sizeof(RxBuffer));
-		memset(&tx, 0, sizeof(TxBuffer));
+		for (int i = 0; i < 5; ++i)
+		{
+			RxBuffer rx;
+			TxBuffer tx;
+			currentTemp = 0.0f;
 
-		tx.cmd = CMD_READY;
+			memset(&rx, 0, sizeof(RxBuffer));
+			memset(&tx, 0, sizeof(TxBuffer));
 
-		BYTE senddata[65] = { 0, };
-		BYTE readdata[65] = { 0, };
-		memcpy(senddata, &tx, sizeof(TxBuffer));
+			tx.cmd = CMD_READY;
 
-		device->Write(senddata);
+			BYTE senddata[65] = { 0, };
+			BYTE readdata[65] = { 0, };
+			memcpy(senddata, &tx, sizeof(TxBuffer));
 
-		device->Read(&rx);
+			device->Write(senddata);
 
-		memcpy(readdata, &rx, sizeof(RxBuffer));
-		memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+			device->Read(&rx);
 
-		if (currentTemp <= 10.0f)
+			memcpy(readdata, &rx, sizeof(RxBuffer));
+			memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
+			Sleep(TIMER_DURATION);
+		}
+		if (currentTemp < 10.0f)
 		{
 			message = L"Low temperature! Chip connection check!";
 			AfxMessageBox(message);
@@ -674,7 +680,10 @@ void CMainDialog::OnTimer(UINT_PTR nIDEvent)
 
 			// 210119 KBH Motor Stucked
 			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
-			initState();
+
+			exit(0); // 211117 KBH if motor is stuck, program exit
+			//initState();	// 210120 KBH state initialize 
+			
 			return;
 		}
 
@@ -714,13 +723,19 @@ void CMainDialog::OnTimer(UINT_PTR nIDEvent)
 	}
 	else if (nIDEvent == Magneto::TimerCleanupTaskID) {
 		if (!magneto->runTask()) {
-			KillTimer(Magneto::TimerRuntaskID);
+			// 211119 KBH Timer kill CleanupTask
+			//KillTimer(Magneto::TimerRuntaskID); 
+			KillTimer(Magneto::TimerCleanupTaskID);
+
 			// 210119 KBH remove unused code 
 			//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
 
 			// 210119 KBH Motor Stucked
 			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
-			initState();	// 210120 KBH state initialize 
+
+			exit(0); // 211117 KBH if motor is stuck, program exit
+			//initState();	// 210120 KBH state initialize 
+			
 			return;
 		}
 
@@ -1238,6 +1253,12 @@ void CMainDialog::PCREndTask() {
 		AfxMessageBox(L"Emergency stop!(overheating)");
 	}
 
+	// 210714 KBH : reset SersorValues 
+	sensorValuesFam.clear();
+	sensorValuesHex.clear();
+	sensorValuesRox.clear();
+	sensorValuesCy5.clear();
+
 	emergencyStop = false;
 	isCompletePCR = false;
 
@@ -1277,7 +1298,8 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 			logThreshold = tempLogThreshold;
 		}
 
-		for (int i = 0; i < sensorValue.size(); ++i) {
+		// 211119 KBH start index change (i = 0 -> i = 10)
+		for (int i = 10; i < sensorValue.size(); ++i) {
 			if (log(sensorValue[i] - baseMean) > logThreshold) {
 				idx = i;
 				break;
@@ -1285,7 +1307,9 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 		}
 
 		if (idx >= sensorValue.size() || idx <= 0) {
-			result = L"Not detected";
+			// 210714 KBH Change "Not detected" to "Negative"
+			//result = L"Not detected";
+			result = L"Negative";
 		}
 		else {
 			double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };

@@ -201,6 +201,7 @@
 #define IDC_STATIC_CONFIRM_MESSAGE      1104
 #define IDC_EDIT_CURRENT_TEMP           1105
 #define IDC_PROGRESS                    1106
+#define IDC_STATIC_PLOT                 1107
 
 // Next default values for new objects
 // 
@@ -208,7 +209,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1107
+#define _APS_NEXT_CONTROL_VALUE         1108
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

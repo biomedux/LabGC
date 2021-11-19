@@ -267,7 +267,10 @@ CString CMagneto::protocolCompile(vector<CString> &protocol)
 {
 	CString compileMessage = L"=====Compile Error=====\n";
 	// cmd list 를 만들어 command 와 mapping 시킨다.
-	static const CString tempCmdList[14] = { L"goto", L"filter", L"mixing", L"waiting", L"pumping up", L"pumping sup", L"pumping down", L"pumping sdown", L"ready", L"home", L"magnet on", L"magnet off", L"heating", L"pcr", };
+	// 20211017-MHR, chamber180 추가
+	static const CString tempCmdList[15] = { L"goto", L"filter", L"mixing", L"waiting",
+		L"pumping up", L"pumping sup", L"pumping down", L"pumping sdown",
+		L"ready", L"home", L"magnet on", L"magnet off", L"heating", L"pcr", L"chamber180"};
 
 	// 이전의 Protocol 을 비운다.
 	protcolBinary.clear();
@@ -312,8 +315,9 @@ CString CMagneto::protocolCompile(vector<CString> &protocol)
 		{
 			// 커맨드에 매개변수(args) 가 없는 경우 처리
 			// 아래 명시된 프로토콜 커맨드는 매개변수가 없다.
+			// 20211017-MHR chamber180 추가
 			if ( (j == ProtocolCmd::MAGNET_ON) || (j == ProtocolCmd::MAGNET_OFF) || (j == ProtocolCmd::PCR) ||
-					(j == ProtocolCmd::HOME) || (j == ProtocolCmd::READY) )
+					(j == ProtocolCmd::HOME) || (j == ProtocolCmd::READY) || (j == ProtocolCmd::CHAMBER_180))
 			{
 				if (line.Compare(tempCmdList[j]) == 0)
 					bin.cmd = j;
@@ -420,6 +424,9 @@ void CMagneto::initPredefinedAction()
 	preDefinedAction[ProtocolCmd::HOME].push_back(ActionBinary(ActionCmd::SECOND_WAIT, 1, 1));//MotorType::CHAMBER //SECOND_WAIT
 	preDefinedAction[ProtocolCmd::HOME].push_back(ActionBinary(ActionCmd::MOVE_INC, 3, MotorType::FILTER,  M_FILTER_OFFSET, M_CHAMBER_SPEED));
 
+	// 20211017-MHR
+	preDefinedAction[ProtocolCmd::CHAMBER_180].push_back(ActionBinary(ActionCmd::MOVE_ABS, 3,
+												MotorType::CHAMBER, M_CHAMBER_OFFSET_180_DEG, M_CHAMBER_SPEED));
 	// SIRI 151206 - for arduino
 	// MAGNET ON Command argument 값을 넣어준다.
 	preDefinedAction[ProtocolCmd::MAGNET_ON].push_back(ActionBinary(ActionCmd::MAGNET_ON, 1, MotorType::PUMPING));

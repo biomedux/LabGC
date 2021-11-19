@@ -150,6 +150,7 @@ namespace Magneto{
 #define M_CHAMBER_STEP_PER_REV			32000.0
 #define M_CHAMBER_GEAR_RATIO			2
 #define M_CHAMBER_OFFSET				1464//s1-1618// s2-1464//1297 //1197	// origin offset (rotate 축 origin이후 보정 값)
+#define M_CHAMBER_OFFSET_180_DEG		(M_CHAMBER_OFFSET-M_CHAMBER_STEP_PER_REV)	// chamber 180 위치, 20211017-ㅡㅗㄲ
 #define M_CHAMBER_DISK_OFFSET			3971	// 20.7844 deg (디스크 기준점에서 디스크의 홀까지 간격)
 #define M_CHAMBER_BACKLASH				100//0//680//682
 #define M_CHAMBER_DIFF					1304	// 7.335 deg
@@ -342,14 +343,16 @@ namespace ProtocolCmd{
 		MAGNET_OFF = 11,	//170106_2 KYS - 1  9->11 변경
 		HEATING = 12,		//170106_2 KYS - 1  10->12 변경
 		PCR = 13,			//170106_2 KYS - 1  11->13 변경
-		MAX = 13,			//170106_2 KYS - 1  11->13 변경
+		//MAX = 13,			//170106_2 KYS - 1  11->13 변경
+		CHAMBER_180 = 14,	//20211017-MHR, chamber180 명령 추가
+		MAX = 14
 	};
 
 	const static CString toString[MAX+1] =
 	{
 		L"GO", L"FILTER", L"MIX", L"WAIT", L"PUMPING_UP", L"PUMPING_SUP",
 		L"PUMPING_DOWN", L"PUMPING_SDOWN", L"READY", L"HOME", L"MAGNET_ON",
-		L"MAGNET_OFF", L"HEATING", L"PCR"
+		L"MAGNET_OFF", L"HEATING", L"PCR", L"CHAMBER180"
 	};
 };
 

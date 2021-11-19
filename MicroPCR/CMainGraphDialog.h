@@ -125,6 +125,8 @@ private:
 	bool useRox;
 	bool useCy5;
 
+	CRect m_graphRect; // 211117 KBH graph plot Rect 
+
 public:
 	CMainGraphDialog(CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~CMainGraphDialog();
