@@ -269,7 +269,7 @@ void	CAxis::OnDraw( CDC *pDC, CRect clientRect, CRect chartRect, CRect updateRec
 						textRect.top = textRect.bottom = tickPoint.y;
 
 						//tickLabel = GetTickLabel( i ); 
-						tickLabel.Format(L"%d", m_ytickPos[i]); // 210830 KJD label을 array에 있는 값으로 대치
+						tickLabel.Format(L"%.1f", m_ytickPos[i]); // 210830 KJD label을 array에 있는 값으로 대치 // 211130 KBH change formatted word (%d -> %.1f)
 
 						pDC->DrawText( tickLabel, (LPRECT)&textRect, textMode );
 						labelExtent = pDC->GetTextExtent( tickLabel );

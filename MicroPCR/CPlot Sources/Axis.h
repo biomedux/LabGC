@@ -33,7 +33,7 @@ public:
 	COLORREF	m_TitleColor;	// color to use for title
 	BOOL		m_RangeSet;		// has the range been set?
 
-	int m_ytickPos[9]; // 210910 KJD 
+	double m_ytickPos[9]; // 210910 KJD 211130 KBH change data type (int -> float) 
 
 	CAxis();
 	~CAxis();
