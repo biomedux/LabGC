@@ -141,6 +141,9 @@ BOOL CMainGraphDialog::OnInitDialog()
 
 	initResultTable();
 
+	// 211130 KBH initialize python socket server
+	initWinSocket();
+
 #ifdef EMULATOR
 	AfxMessageBox(L"이 프로그램은 에뮬레이터 장비용 입니다.");
 #endif
@@ -212,14 +215,12 @@ void CMainGraphDialog::initChart() {
 	//axis->SetRange(-512, 4096);	// 210203 KBH Y-range lower : 0 -> -512
 
 	//210830 KJD Setting Axis and m_Chart
-	axis->SetRange(-100, 2600);
-	axis->SetTickCount(5);
-	axis->m_ytickPos[0] = 0;
-	axis->m_ytickPos[1] = 500;
-	axis->m_ytickPos[2] = 1000;
-	axis->m_ytickPos[3] = 1500;
-	axis->m_ytickPos[4] = 2000;
-	axis->m_ytickPos[5] = 2500;
+	axis->SetRange(-0.1, 1.1);
+	axis->SetTickCount(2);
+	axis->m_ytickPos[0] = 0.0;
+	axis->m_ytickPos[1] = 0.5;
+	axis->m_ytickPos[2] = 1.0;
+
 	m_Chart.m_UseMajorVerticalGrids = TRUE;
 	m_Chart.m_UseMajorHorizontalGrids = TRUE;
 	m_Chart.m_MajorGridLineStyle = PS_DOT;
@@ -1403,6 +1404,7 @@ void CMainGraphDialog::setChartValue() {
 
 		if (useFam)
 		{
+			/* 211130 KBH delete baseline fitting
 			// Calculate the mean value first
 			if (sensorValuesFam.size() >= 11) {
 				double sum = std::accumulate(sensorValuesFam.begin()+1, sensorValuesFam.begin() + 11, 0.0);
@@ -1421,7 +1423,16 @@ void CMainGraphDialog::setChartValue() {
 				else {
 					copySensorValuesFam.push_back(sensorValuesFam[i]);
 				}
+			}*/
+
+			// 211130 KBH add curve fitting 
+			// Copy data  
+			for (int i = 0; i < sensorValuesFam.size(); ++i)
+			{
+				copySensorValuesFam.push_back(sensorValuesFam[i]);
 			}
+			CurveFit(copySensorValuesFam);
+
 
 			int	nDims_fam = 2, dims_fam[2] = { 2, copySensorValuesFam.size() };
 			for (int i = 0; i < copySensorValuesFam.size(); ++i)
@@ -1440,6 +1451,7 @@ void CMainGraphDialog::setChartValue() {
 
 		if (useHex)
 		{
+			/* 211130 KBH delete baseline fitting
 			// Calculate the mean value first
 			if (sensorValuesHex.size() >= 11) {
 				double sum = std::accumulate(sensorValuesHex.begin()+1, sensorValuesHex.begin() + 11, 0.0);
@@ -1458,7 +1470,15 @@ void CMainGraphDialog::setChartValue() {
 				else {
 					copySensorValuesHex.push_back(sensorValuesHex[i]);
 				}
+			} */
+
+			// 211130 KBH add curve fitting 
+			// Copy data  
+			for (int i = 0; i < sensorValuesHex.size(); ++i)
+			{
+				copySensorValuesHex.push_back(sensorValuesHex[i]);
 			}
+			CurveFit(copySensorValuesHex);
 
 			int	nDims_hex = 2, dims_hex[2] = { 2, copySensorValuesHex.size() };
 			for (int i = 0; i < copySensorValuesHex.size(); ++i)
@@ -1477,15 +1497,16 @@ void CMainGraphDialog::setChartValue() {
 
 		if (useRox)
 		{
-			// Calculate the mean value first
-			if (sensorValuesRox.size() >= 11) {
-				double sum = std::accumulate(sensorValuesRox.begin()+1, sensorValuesRox.begin() + 11, 0.0);
-				meanRox = sum / 10;
-			}
-			else {
-				double sum = std::accumulate(sensorValuesRox.begin(), sensorValuesRox.end(), 0.0);
-				meanRox = sum / sensorValuesRox.size();
-			}
+			/* 211130 KBH delete baseline fitting
+			//// Calculate the mean value first
+			//if (sensorValuesRox.size() >= 11) {
+			//	double sum = std::accumulate(sensorValuesRox.begin()+1, sensorValuesRox.begin() + 11, 0.0);
+			//	meanRox = sum / 10;
+			//}
+			//else {
+			//	double sum = std::accumulate(sensorValuesRox.begin(), sensorValuesRox.end(), 0.0);
+			//	meanRox = sum / sensorValuesRox.size();
+			//}
 
 			// Copy data
 			for (int i = 0; i < sensorValuesRox.size(); ++i) {
@@ -1495,7 +1516,15 @@ void CMainGraphDialog::setChartValue() {
 				else {
 					copySensorValuesRox.push_back(sensorValuesRox[i]);
 				}
+			}*/
+
+			// 211130 KBH add curve fitting 
+			// Copy data  
+			for (int i = 0; i < sensorValuesRox.size(); ++i)
+			{
+				copySensorValuesRox.push_back(sensorValuesRox[i]);
 			}
+			CurveFit(copySensorValuesRox);
 
 			int	nDims_rox = 2, dims_rox[2] = { 2, copySensorValuesRox.size() };
 			for (int i = 0; i < copySensorValuesRox.size(); ++i)
@@ -1514,6 +1543,7 @@ void CMainGraphDialog::setChartValue() {
 
 		if (useCy5)
 		{
+			/* 211130 KBH delete baseline fitting
 			// Calculate the mean value first
 			if (sensorValuesCy5.size() >= 11) {
 				double sum = std::accumulate(sensorValuesCy5.begin()+1, sensorValuesCy5.begin() + 11, 0.0);
@@ -1532,7 +1562,15 @@ void CMainGraphDialog::setChartValue() {
 				else {
 					copySensorValuesCy5.push_back(sensorValuesCy5[i]);
 				}
+			}*/
+
+			// 211130 KBH add curve fitting 
+			// Copy data  
+			for (int i = 0; i < sensorValuesCy5.size(); ++i)
+			{
+				copySensorValuesCy5.push_back(sensorValuesCy5[i]);
 			}
+			CurveFit(copySensorValuesCy5);
 
 			int	nDims_cy5 = 2, dims_cy5[2] = { 2, copySensorValuesCy5.size() };
 			for (int i = 0; i < copySensorValuesCy5.size(); ++i)
@@ -1769,4 +1807,63 @@ void CMainGraphDialog::OnBnClickedButtonFilterCy5()
 	setChartValue();
 	//InvalidateRect(&CRect(15, 130, 470, 500));
 	InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position
+}
+
+// 211130 KBH initialize WinSocket and start python fitting server
+void CMainGraphDialog::initWinSocket()
+{
+	WSAStartup(MAKEWORD(2, 2), &m_wsdata);
+
+	m_socket = socket(AF_INET, SOCK_DGRAM, 0);
+
+	ZeroMemory(&m_addr, sizeof(m_addr)); // initialize structure
+	m_addr.sin_family = AF_INET;
+	m_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); // set host ip address
+	m_addr.sin_port = htons(PORT); // set port 
+
+	// start python fitting server
+	CString prompt_cmd;
+	prompt_cmd.Format(L"start .\\curve\\CurveFitting.exe %d", PORT);
+	std::system((char*)(LPCTSTR)prompt_cmd);
+}
+
+// 211130 KBH communication to python fitting server
+void CMainGraphDialog::CurveFit(vector<double>& sensorValues)
+{
+	// set test message 
+	char buffer[201] = { 0. };
+
+	vector<float> sensorValuesCopy;
+
+	for (int i = 1; i < sensorValues.size(); ++i)
+	{
+		sensorValuesCopy.push_back(sensorValues[i]);
+	}
+
+	buffer[0] = (BYTE)sensorValuesCopy.size();
+	memcpy(buffer + 1, sensorValuesCopy.data(), sizeof(float) * sensorValuesCopy.size());
+
+	// send and recv test message 
+	int size_addr = sizeof(m_addr);
+
+	sendto(m_socket, buffer, sizeof(buffer), 0, (SOCKADDR*)&m_addr, sizeof(m_addr));
+	memset(buffer, 0, sizeof(buffer)); // buffer clear
+	recvfrom(m_socket, buffer, sizeof(buffer), 0, (SOCKADDR*)&m_addr, &size_addr);
+
+	for (int i = 0; i < sensorValuesCopy.size(); ++i)
+	{
+		float light;
+		memcpy(&light, &buffer[i * 4], sizeof(float));
+		sensorValues[i + 1] = (double)light;
+	}
+
+	sensorValues[0] = sensorValues.size() > 2 ? sensorValues[1] : 0.; // first sensor value is dummy
+}
+
+// 211130 KBH Close socket but it is not used
+void CMainGraphDialog::closeWinSocket()
+{
+	// close winsock2
+	closesocket(m_socket);
+	WSACleanup();
 }

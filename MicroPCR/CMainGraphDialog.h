@@ -11,6 +11,7 @@
 // CMainDialog 대화 상자
 
 #define TIMEOUT_CONST 1000
+#define PORT 65535 // 211130 KBH Socket Server Port
 
 class CMainGraphDialog : public CDialogEx
 {
@@ -126,6 +127,16 @@ private:
 	bool useCy5;
 
 	CRect m_graphRect; // 211117 KBH graph plot Rect 
+
+	// 211130 KBH winsocket2 parameters (for connecting curve fitting server)
+	WSADATA m_wsdata;
+	SOCKET m_socket;
+	SOCKADDR_IN m_addr;
+
+	// 211130 KBH winsocket2 functions (for connecting curve fitting server)
+	void initWinSocket(); // run server process and start socket
+	void CurveFit(vector<double>& sensorValues);
+	void closeWinSocket(); // it is not used 
 
 public:
 	CMainGraphDialog(CWnd* pParent = nullptr);   // 표준 생성자입니다.
