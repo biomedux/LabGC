@@ -1822,9 +1822,12 @@ void CMainGraphDialog::initWinSocket()
 	m_addr.sin_port = htons(PORT); // set port 
 
 	// start python fitting server
-	CString prompt_cmd;
-	prompt_cmd.Format(L"start .\\curve\\CurveFitting.exe %d", PORT);
-	std::system((char*)(LPCTSTR)prompt_cmd);
+	CString cstr_cmd;
+	const char* prompt_cmd;
+	cstr_cmd.Format(L"start .\\curve\\CurveFitting.exe %d",(int)PORT);
+	prompt_cmd = (CStringA)cstr_cmd;
+
+	std::system(prompt_cmd);
 }
 
 // 211130 KBH communication to python fitting server
