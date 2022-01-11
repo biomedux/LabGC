@@ -573,13 +573,15 @@ void CMainDialog::OnBnClickedButtonStart()
 
 
 // 211117 KBH chip connection check 
-//(5번째 read_buffer 에 온도 값이 10도 이하일 경우 PCR Chip Connection Error)
+// 220111 KBH changed iteration count from 5 to 20 (waiting time is changed from 250ms to 1000ms)
+// (20번째 read_buffer 에 온도 값이 10도 이하일 경우 PCR Chip Connection Error)
+// change the position of sleep function
 #ifndef EMULATOR
 	if (!isStarted)
 	{
 		float currentTemp;
 
-		for (int i = 0; i < 5; ++i)
+		for (int i = 0; i < 20; ++i)
 		{
 			RxBuffer rx;
 			TxBuffer tx;
@@ -595,12 +597,11 @@ void CMainDialog::OnBnClickedButtonStart()
 			memcpy(senddata, &tx, sizeof(TxBuffer));
 
 			device->Write(senddata);
-
+			Sleep(TIMER_DURATION);
 			device->Read(&rx);
 
 			memcpy(readdata, &rx, sizeof(RxBuffer));
 			memcpy(&currentTemp, &(rx.chamber_temp_1), sizeof(float));
-			Sleep(TIMER_DURATION);
 		}
 		if (currentTemp < 10.0f)
 		{
