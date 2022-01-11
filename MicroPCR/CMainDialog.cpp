@@ -1163,17 +1163,18 @@ void CMainDialog::cleanupTask() {
 
 	magneto->Alarmreset();	// 210120 KBH Magneto AlarmReset
 
+	// 220111 KBH disk & syringe motors not homing after PCR protocol is over
 	// Start cleanup timer
 	// Setting the home command
-	CString magnetoProtocolRes = magneto->loadProtocolFromData(L"home");
+	// CString magnetoProtocolRes = magneto->loadProtocolFromData(L"home");
 
-	if (magneto->isCompileSuccess(magnetoProtocolRes)) {
-		// initialize the protocol
-		vector<ActionBeans> treeList;
-		magneto->generateActionList(treeList);
-	}
+	// if (magneto->isCompileSuccess(magnetoProtocolRes)) {
+	// 	// initialize the protocol
+	// 	vector<ActionBeans> treeList;
+	// 	magneto->generateActionList(treeList);
+	// }
 
-	magneto->start();
+	// magneto->start();
 	SetTimer(Magneto::TimerCleanupTaskID, Magneto::TimerCleanupTaskDuration, NULL);
 }
 
