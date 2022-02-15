@@ -31,6 +31,12 @@
 *.out
 *.app
 
+# Protocol & History data 
+*.data
+
+# log file
+*.log
+
 # .vs files
 .vs/
 Debug/
