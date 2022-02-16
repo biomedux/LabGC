@@ -1603,10 +1603,11 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 	if (idx >= 11) {
 		// BaseMean value
 		float baseMean = 0.0;
-		for (int i = 1; i < 11; ++i) {
+		// 220215 KBH Change baseMean calculation range (1 ~ 11 -> 3 ~ 16)
+		for (int i = 3; i < 16; ++i) {
 			baseMean += sensorValue[i];
 		}
-		baseMean /= 10.;
+		baseMean /= 13.;
 
 		float threshold = 0.697 * flRelativeMax / 10.;
 		float logThreshold = log(threshold);
@@ -1627,7 +1628,7 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 				break;
 			}
 		}
-
+		
 		if (idx >= sensorValue.size() || idx <= 0) {
 			// 210714 KBH Change "Not detected" to "Negative"
 			//result = L"Not detected";
@@ -1636,7 +1637,7 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 		else {
 			double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };
 
-			float cpos = idx + 1;
+			float cpos = idx; // 220216 KBH The starting index of sensorValue is 1
 			float cval = log(sensorValue[idx] - baseMean);
 			float delta = cval - log(sensorValue[idx - 1] - baseMean);
 			ct = cpos - (cval - logThreshold) / delta;

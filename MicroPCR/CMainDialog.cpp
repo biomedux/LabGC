@@ -1284,10 +1284,11 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 	if (idx >= 10) {
 		// BaseMean value
 		float baseMean = 0.0;
-		for (int i = 0; i < 10; ++i) {
+		// 220215 KBH Change baseMean calculation range (0 ~ 10 -> 2 ~ 15)
+		for (int i = 2; i < 15; ++i) {
 			baseMean += sensorValue[i];
 		}
-		baseMean /= 10.;
+		baseMean /= 13.;
 
 		float threshold = 0.697 * flRelativeMax / 10.;
 		float logThreshold = log(threshold);
