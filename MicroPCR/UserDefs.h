@@ -127,6 +127,12 @@ public:
 	float ctRox;
 	float ctCY5;
 
+	// 220221 KBH filter threshold values
+	float thresholdFam;
+	float thresholdHex;
+	float thresholdRox;
+	float thresholdCY5;
+
 	CString magnetoData;
 
 	vector<Action> actionList;
@@ -145,6 +151,10 @@ public:
 		, ctHex(38.0)
 		, ctRox(38.0)
 		, ctCY5(38.0)
+		, thresholdFam(5.05)
+		, thresholdHex(4.47)
+		, thresholdRox(5.0) // 220221 KBH defulat value
+		, thresholdCY5(4.3)
 		, magnetoData(L"")
 	{
 	}
