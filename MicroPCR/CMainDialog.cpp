@@ -1277,6 +1277,9 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 	CString ctText = L"";
 	CString filterLabel[4] = { currentProtocol.labelFam, currentProtocol.labelHex, currentProtocol.labelRox, currentProtocol.labelCY5 };
 
+	// 220222 KBH filter threshold values array
+	float filterThreshold[4] = { currentProtocol.thresholdFam, currentProtocol.thresholdHex, currentProtocol.thresholdRox, currentProtocol.thresholdCY5 };
+
 	// ignore the data when the data is over the 10
 	int idx = sensorValue.size();
 
@@ -1290,17 +1293,9 @@ void CMainDialog::setCTValue(CString dateTime, vector<double>& sensorValue, int 
 		}
 		baseMean /= 13.;
 
-		float threshold = 0.697 * flRelativeMax / 10.;
-		float logThreshold = log(threshold);
+		// 220222 KBH Change how thresholds are loaded.
+		float logThreshold = filterThreshold[filterIndex];
 		float ct;
-
-		// Getting the log threshold from file
-		float tempLogThreshold = FileManager::getFilterValue(filterIndex);
-
-		// Success to load
-		if (tempLogThreshold > 0.0) {
-			logThreshold = tempLogThreshold;
-		}
 
 		// 211119 KBH start index change (i = 0 -> i = 10)
 		for (int i = 10; i < sensorValue.size(); ++i) {
