@@ -319,6 +319,12 @@ namespace FileManager
 						ar >> protocol.ctRox;
 						ar >> protocol.ctCY5;
 
+						// 220222 KBH Save the thresholds
+						ar >> protocol.thresholdFam;
+						ar >> protocol.thresholdHex;
+						ar >> protocol.thresholdRox;
+						ar >> protocol.thresholdCY5;
+
 						ar >> protocol.magnetoData;
 
 						ar >> size2;
@@ -387,6 +393,12 @@ namespace FileManager
 				ar << protocols[i].ctHex;
 				ar << protocols[i].ctRox;
 				ar << protocols[i].ctCY5;
+
+				// 220222 KBH Save the thresholds
+				ar << protocols[i].thresholdFam;
+				ar << protocols[i].thresholdHex;
+				ar << protocols[i].thresholdRox;
+				ar << protocols[i].thresholdCY5;
 
 				ar << protocols[i].magnetoData;
 
