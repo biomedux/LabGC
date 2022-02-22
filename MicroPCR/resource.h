@@ -146,8 +146,12 @@
 #define IDC_EDIT_MAGNET_CURRENT         1048
 #define IDC_EDIT_FILTER_CY5_CT          1048
 #define IDC_EDIT_LOAD_TARGET            1049
+#define IDC_EDIT_THRESHOLD_FAM          1049
 #define IDC_EDIT_LOAD_CURRENT           1050
+#define IDC_EDIT_THRESHOLD_HEX          1050
+#define IDC_EDIT_THRESHOLD_ROX          1051
 #define IDC_BUTTON_START                1052
+#define IDC_EDIT_THRESHOLD_CY5          1052
 #define IDC_PROGRESS_BAR                1053
 #define IDC_CHECK_PROTOCOL_STOP         1055
 #define IDC_CHECK_ACTION_STOP           1056
