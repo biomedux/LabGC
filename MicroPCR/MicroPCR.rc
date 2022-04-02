@@ -238,7 +238,7 @@ END
 
 IDD_DIALOG_MAIN DIALOGEX 0, 0, 323, 182
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "LabGC v1.12(2021.11.19)"
+CAPTION "LabGC v1.13(2022.04.02)"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Connection",IDC_STATIC,7,7,146,67
@@ -372,7 +372,7 @@ END
 
 IDD_DIALOG_MAIN_GRAPH DIALOGEX 0, 0, 323, 494
 STYLE DS_SETFONT | DS_MODALFRAME | DS_NOIDLEMSG | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "LabGenius v2.14(2021.11.19)"
+CAPTION "LabGenius v2.15(2022.04.02)"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Connection",IDC_STATIC,7,7,146,67
@@ -694,8 +694,8 @@ IDR_FIRMWARE_FILE       256                     "Firmware.txt"
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE 18, 1
 #pragma code_page(949)
-#include "res\MicroPCR.rc2"  // Microsoft Visual C++ 이외의 다른 도구에서 편집한 리소스입니다.
-#include "l.KOR\afxres.rc"      // 표준 구성 요소입니다.
+#include "res\MicroPCR.rc2"  // Microsoft Visual C++ ????? ??? ???????? ?????? ?????????.
+#include "l.KOR\afxres.rc"      // ??? ???? ???????.
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
