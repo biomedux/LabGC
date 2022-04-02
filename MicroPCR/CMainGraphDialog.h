@@ -140,6 +140,8 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
 
 	DECLARE_MESSAGE_MAP()
+	BOOL OnDeviceChange(UINT nEventType, DWORD dwData); // 220325 KBH Device Change Handler
+
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();

@@ -13,6 +13,7 @@
 #include "ConfirmDialog.h"
 
 #include <numeric>
+#include <dbt.h> // 220325 KBH Device Change Handler
 
 // CMainDialog 대화 상자
 
@@ -441,10 +442,6 @@ void CMainDialog::initState()
 	cleanupTask();
 
 	KillTimer(Magneto::TimerRuntaskID);
-}
-
-BOOL CMainDialog::OnDeviceChange(UINT nEventType, DWORD dwData) {
-	return TRUE;
 }
 
 void CMainDialog::OnBnClickedButtonConnect()
@@ -1354,7 +1351,7 @@ void CMainDialog::initLog() {
 
 	CString fileName, fileName2;
 	CTime time = CTime::GetCurrentTime();
-	CString currentTime = time.Format(L"%Y%m%d-%H%M-%S");
+	CString currentTime = time.Format(L"%Y%m%d-%H-%M-%S"); // 220402 KBH 오타수정
 	
 	// change file name
 	//fileName = time.Format(L"./Record/%Y%m%d-%H%M-%S.txt");
@@ -1380,4 +1377,54 @@ void CMainDialog::clearLog() {
 	if (m_recPDFile != NULL) {
 		m_recPDFile.Close();
 	}
+}
+
+// 220325 KBH Device Change Handler
+BOOL CMainDialog::OnDeviceChange(UINT nEventType, DWORD dwData)
+{
+	if (isConnected && nEventType == DBT_DEVNODES_CHANGED)
+	{
+		// get current connected device serial number
+		int selectedIdx = deviceList.GetCurSel();
+		CString deviceSerial;
+		deviceList.GetLBText(selectedIdx, deviceSerial);
+		long serial_number = _ttoi(deviceSerial);
+
+		// check device list
+		int deviceNums = device->GetDevices();
+		bool detected = false;
+		for (int i = 0; i < deviceNums; ++i)
+		{
+			CString deviceSerial = device->GetDeviceSerial(i);
+			// check existed connected device
+			if (deviceSerial.Compare(deviceSerial.Mid(5)))
+			{
+				detected = true;
+			}
+		}
+		// Connected device not detected
+		if (!detected)
+		{
+			CStdioFile file;
+			CString path;
+			CFileFind finder;
+			
+			CreateDirectory(L"./Log", NULL);
+
+			path.Format(L"./Log/err%06ld.log", serial_number);
+
+			CTime time = CTime::GetCurrentTime();
+			CString logMsg = time.Format(L"[%Y%m%d-%H-%M-%S]\tUSB Disconnected");
+
+			if (finder.FindFile(path))
+				file.Open(path, CStdioFile::modeWrite);
+			else
+				file.Open(path, CStdioFile::modeCreate | CStdioFile::modeWrite);
+			file.SeekToEnd();
+			file.WriteString(logMsg);
+			file.Close();
+		}
+
+	}
+	return false;
 }

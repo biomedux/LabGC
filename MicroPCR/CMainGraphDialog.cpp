@@ -15,7 +15,7 @@
 #include "ConfirmDialog.h"
 
 #include <numeric>
-
+#include <dbt.h> // 220325 KBH Device Change Handler
 
 // CMainDialog 대화 상자
 
@@ -110,6 +110,8 @@ BEGIN_MESSAGE_MAP(CMainGraphDialog, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_FILTER_HEX, &CMainGraphDialog::OnBnClickedButtonFilterHex)
 	ON_BN_CLICKED(IDC_BUTTON_FILTER_ROX, &CMainGraphDialog::OnBnClickedButtonFilterRox)
 	ON_BN_CLICKED(IDC_BUTTON_FILTER_CY5, &CMainGraphDialog::OnBnClickedButtonFilterCy5)
+
+	ON_WM_DEVICECHANGE() // 220325 KBH Append Device Change Handler
 END_MESSAGE_MAP()
 
 // CMainDialog 메시지 처리기
@@ -1677,7 +1679,7 @@ void CMainGraphDialog::initLog() {
 
 	CString fileName, fileName2;
 	CTime time = CTime::GetCurrentTime();
-	CString currentTime = time.Format(L"%Y%m%d-%H%M-%S");
+	CString currentTime = time.Format(L"%Y%m%d-%H-%M-%S"); // KBH 220402 오타 수정
 
 	// change file name
 	//fileName = time.Format(L"./Record/%Y%m%d-%H%M-%S.txt");
@@ -1769,3 +1771,55 @@ void CMainGraphDialog::OnBnClickedButtonFilterCy5()
 	//InvalidateRect(&CRect(15, 130, 470, 500));
 	InvalidateRect(&m_graphRect, FALSE); // 211117 KBH static position -> dynamic position
 }
+
+// 220325 KBH Device Change Handler
+BOOL CMainGraphDialog::OnDeviceChange(UINT nEventType, DWORD dwData)
+{
+	if (isConnected && nEventType == DBT_DEVNODES_CHANGED)
+	{
+		// get current connected device serial number
+		int selectedIdx = deviceList.GetCurSel();
+		CString deviceSerial;
+		deviceList.GetLBText(selectedIdx, deviceSerial);
+		long serial_number = _ttoi(deviceSerial);
+
+		// check device list
+		int deviceNums = device->GetDevices();
+		bool detected = false;
+		for (int i = 0; i < deviceNums; ++i)
+		{
+			CString deviceSerial = device->GetDeviceSerial(i);
+			// check existed connected device
+			if (deviceSerial.Compare(deviceSerial.Mid(5))) 
+			{	
+				detected = true;	
+			}
+		}
+		// Connected device not detected
+		if (!detected)
+		{
+			CStdioFile file;
+			CString path;
+			CFileFind finder;
+
+			CreateDirectory(L"./Log", NULL);
+
+			path.Format(L"./Log/err%06ld.txt", serial_number);
+
+			CTime time = CTime::GetCurrentTime();
+			CString logMsg = time.Format(L"[%Y-%m-%d-%H-%M-%S]\tUSB Disconnected\r\n");
+
+			if (finder.FindFile(path))
+				file.Open(path, CStdioFile::modeWrite);
+			else
+				file.Open(path, CStdioFile::modeCreate | CStdioFile::modeWrite);
+
+			file.SeekToEnd();
+			file.WriteString(logMsg);
+			file.Close();
+		}
+		
+	}
+	return false;
+}
+
