@@ -108,6 +108,7 @@ private:
 	void initLog();
 	void clearLog();
 	bool logStopped;
+	bool isConnectionBroken; // 220707 KBH USB HID is disconnected
 
 public:
 	CMainDialog(CWnd* pParent = nullptr);   // 표준 생성자입니다.

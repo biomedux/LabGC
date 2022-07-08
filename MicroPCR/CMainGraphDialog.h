@@ -126,6 +126,7 @@ private:
 	bool useCy5;
 
 	CRect m_graphRect; // 211117 KBH graph plot Rect 
+	bool isConnectionBroken; // 220707 KBH USB HID is disconnected
 
 public:
 	CMainGraphDialog(CWnd* pParent = nullptr);   // 표준 생성자입니다.

@@ -61,6 +61,7 @@ CMainDialog::CMainDialog(CWnd* pParent /*=nullptr*/)
 	, recordingCount(0)
 	, logStopped(false)
 	, m_strStylesPath(L"./")
+	, isConnectionBroken(false)
 {
 	// load icon
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -1382,49 +1383,53 @@ void CMainDialog::clearLog() {
 // 220325 KBH Device Change Handler
 BOOL CMainDialog::OnDeviceChange(UINT nEventType, DWORD dwData)
 {
-	if (isConnected && nEventType == DBT_DEVNODES_CHANGED)
+	if (isConnected)
 	{
 		// get current connected device serial number
-		int selectedIdx = deviceList.GetCurSel();
 		CString deviceSerial;
+		int selectedIdx = deviceList.GetCurSel();
 		deviceList.GetLBText(selectedIdx, deviceSerial);
-		long serial_number = _ttoi(deviceSerial);
+		int serial_number = _ttoi(deviceSerial);
 
 		// check device list
 		int deviceNums = device->GetDevices();
 		bool detected = false;
+
 		for (int i = 0; i < deviceNums; ++i)
 		{
-			CString deviceSerial = device->GetDeviceSerial(i);
+			CString serial = device->GetDeviceSerial(i).Mid(5);
 			// check existed connected device
-			if (deviceSerial.Compare(deviceSerial.Mid(5)))
+			if (deviceSerial.Compare(serial) == 0)
 			{
 				detected = true;
 			}
 		}
-		// Connected device not detected
-		if (!detected)
+
+		if (isConnectionBroken && detected)
 		{
-			CStdioFile file;
-			CString path;
-			CFileFind finder;
-			
-			CreateDirectory(L"./Log", NULL);
+			// Open Device & Start Timer
+			char serialBuffer[20];
+			sprintf(serialBuffer, "QuPCR%06d", serial_number);
 
-			path.Format(L"./Log/err%06ld.log", serial_number);
+			BOOL res = device->OpenDevice(LS4550EK_VID, LS4550EK_PID, serialBuffer, TRUE);
+			isConnectionBroken = false;
 
-			CTime time = CTime::GetCurrentTime();
-			CString logMsg = time.Format(L"[%Y%m%d-%H-%M-%S]\tUSB Disconnected");
+			if (isStarted)
+			{
+				m_Timer->startTimer(TIMER_DURATION, FALSE);
+			}
 
-			if (finder.FindFile(path))
-				file.Open(path, CStdioFile::modeWrite);
-			else
-				file.Open(path, CStdioFile::modeCreate | CStdioFile::modeWrite);
-			file.SeekToEnd();
-			file.WriteString(logMsg);
-			file.Close();
 		}
-
+		else if (!isConnectionBroken && !detected)
+		{
+			// Stop Timer & Close Device
+			if (isStarted)
+			{
+				m_Timer->stopTimer();
+			}
+			device->CloseDevice();
+			isConnectionBroken = true;
+		}
 	}
 	return false;
 }
