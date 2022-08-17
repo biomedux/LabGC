@@ -1395,6 +1395,12 @@ BOOL CMainDialog::OnDeviceChange(UINT nEventType, DWORD dwData)
 		int deviceNums = device->GetDevices();
 		bool detected = false;
 
+		// check Running State
+		bool isPCR = false;
+		CString progressState;
+		GetDlgItemText(IDC_STATIC_PROGRESS_STATUS, progressState);
+		isPCR = progressState.Compare(L"PCR in progress...") == 0;
+
 		for (int i = 0; i < deviceNums; ++i)
 		{
 			CString serial = device->GetDeviceSerial(i).Mid(5);
@@ -1414,21 +1420,21 @@ BOOL CMainDialog::OnDeviceChange(UINT nEventType, DWORD dwData)
 			BOOL res = device->OpenDevice(LS4550EK_VID, LS4550EK_PID, serialBuffer, TRUE);
 			isConnectionBroken = false;
 
-			if (isStarted)
+			if (isStarted && isPCR)
 			{
 				m_Timer->startTimer(TIMER_DURATION, FALSE);
 			}
-
 		}
 		else if (!isConnectionBroken && !detected)
 		{
 			// Stop Timer & Close Device
-			if (isStarted)
+			if (isStarted && isPCR)
 			{
 				m_Timer->stopTimer();
 			}
 			device->CloseDevice();
 			isConnectionBroken = true;
+
 		}
 	}
 	return false;
