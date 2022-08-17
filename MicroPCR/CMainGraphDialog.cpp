@@ -1817,6 +1817,8 @@ BOOL CMainGraphDialog::OnDeviceChange(UINT nEventType, DWORD dwData)
 			{
 				m_Timer->startTimer(TIMER_DURATION, FALSE);
 			}
+
+			FileManager::log(L"USB Connected", serial_number);
 		}
 		else if (!isConnectionBroken && !detected)
 		{
@@ -1828,6 +1830,7 @@ BOOL CMainGraphDialog::OnDeviceChange(UINT nEventType, DWORD dwData)
 			device->CloseDevice();
 			isConnectionBroken = true;
 			
+			FileManager::log(L"USB Disconnected", serial_number);
 		}
 	}
 	return false;
