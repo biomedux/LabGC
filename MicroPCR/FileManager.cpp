@@ -153,22 +153,24 @@ namespace FileManager
 		return res;
 	}
 
+	// 220817 KBH change filename and path 
 	void log(CString msg, long serialNumber)
 	{
-		CTime time = CTime::GetCurrentTime();
-		static CString fileName = time.Format(L"%Y%m%d-%H%M-%S.txt");
 		CString path;
-		path.Format(L"./%06ld/Log/%s", serialNumber, fileName);
-
 		CStdioFile file;
 		CFileFind finder;
+		CTime time = CTime::GetCurrentTime();
+		
+		CreateDirectory(L"./Log", NULL);
+		path.Format(L"./Log/err%06ld.txt", serialNumber);
+		
 		if( finder.FindFile(path) )
 			file.Open(path, CStdioFile::modeWrite);
 		else
 			file.Open(path, CStdioFile::modeCreate|CStdioFile::modeWrite);
 
 		file.SeekToEnd();
-		file.WriteString(time.Format(L"[%Y:%m:%d-%H:%M:%S] ") + msg);
+		file.WriteString(time.Format(L"[%Y:%m:%d-%H:%M:%S]\t") + msg + L"\r\n");
 		file.Close();
 	}
 
