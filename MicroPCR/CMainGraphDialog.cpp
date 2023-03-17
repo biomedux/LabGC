@@ -1358,10 +1358,9 @@ void CMainGraphDialog::PCREndTask() {
 			// 210910 KBH : sqlite3에 사용될 변수들
 			// 공주 보건소 CT&NG ct value and result 
 			CString ct_value, ng_value, ct_result, ng_result;
-			// Info data 
-			CString user_id, user_name, user_age, gender, inspector, sample_type, sample_date;
+			
 			// sql query and dummy 
-			CString sql_query, dummy;
+			CString dummy;
 
 			// result index
 			int resultIndex = 0;
@@ -1385,17 +1384,7 @@ void CMainGraphDialog::PCREndTask() {
 			GetDlgItem(IDC_CUSTOM_RESULT_TABLE)->GetWindowRect(&table_rect);
 			InvalidateRect(&table_rect);
 
-			GetDlgItemText(IDC_EDIT_USER_ID, user_id);
-			GetDlgItemText(IDC_EDIT_USER_NAME, user_name);
-			GetDlgItemText(IDC_EDIT_USER_AGE, user_age);
-			GetDlgItemText(IDC_EDIT_INSPECTOR, inspector);
-			GetDlgItemText(IDC_EDIT_SAMPLE_TYPE, sample_type);
-			((CDateTimeCtrl*)GetDlgItem(IDC_DATE_SAMPLE))->GetTime(cTime);
-			sample_date = cTime.Format("%Y-%m-%d");
-			gender = ((CButton*)GetDlgItem(IDC_RADIO_GENDER_M))->GetCheck() ? L"M" : L"F";
-
-			sql_query.Format(L"\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"", user_id, user_name, user_age, gender, inspector, sample_type, sample_date, ct_value, ng_value, ct_result, ng_result);
-			insertFieldValue(sql_query);
+			insertFieldValue(ct_value, ng_value, ct_result, ng_result);
 			AfxMessageBox(L"PCR ended!!");
 		}
 		else AfxMessageBox(L"PCR incomplete!!");
@@ -1723,8 +1712,10 @@ void CMainGraphDialog::initLog() {
 	CreateDirectory(L"./Record/", NULL);
 
 	CString fileName, fileName2;
-	CTime time = CTime::GetCurrentTime();
-	CString currentTime = time.Format(L"%Y%m%d-%H%M-%S");
+
+	// 230316 KBH : time synchronization of log files and database data
+	systemTime = CTime::GetCurrentTime();
+	CString currentTime = systemTime.Format(L"%Y%m%d-%H%M-%S");
 
 	// change file name
 	//fileName = time.Format(L"./Record/%Y%m%d-%H%M-%S.txt");
@@ -1862,12 +1853,22 @@ static char* utf8_encode(const char* src)
 	return result;
 }
 
+// 230316 KBH : show Error Message Box & close database file connection
+void CMainGraphDialog::databaseError(CString SQLERR)
+{
+	AfxMessageBox(SQLERR);
+	sqlite3_free(szErrMsg);
+	sqlite3_close(database);
+	database = NULL;
+}
+
 // 210910 KBH : create History table if not exists Hitory table 
 void CMainGraphDialog::initDatabaseTable()
 {
 	USES_CONVERSION;
 	sqlite3_stmt* stmt;
 	const char* sql_query;
+	CString SQLERR;
 
 	sql_query = "CREATE TABLE IF NOT EXISTS History("
 		"id integer not null primary key autoincrement,"
@@ -1880,12 +1881,9 @@ void CMainGraphDialog::initDatabaseTable()
 
 	if (rst != SQLITE_OK)
 	{
-		CString SQLERR;
-		SQLERR.Format(L"Can't open database: %s", sqlite3_errmsg(database));
-		AfxMessageBox(SQLERR);
-		sqlite3_free(szErrMsg);
-		sqlite3_close(database);
-		database = NULL;
+		SQLERR.Format(L"Can't open database (code : %d)", rst);
+		databaseError(SQLERR);
+		return;
 
 	}
 	else
@@ -1893,40 +1891,61 @@ void CMainGraphDialog::initDatabaseTable()
 		rst = sqlite3_exec(database, sql_query, NULL, NULL, &szErrMsg);
 		if (rst != SQLITE_OK)
 		{
-			CString SQLERR;
-			SQLERR.Format(L"Can't create table: %s", sqlite3_errmsg(database));
-			AfxMessageBox(SQLERR);
-			sqlite3_free(szErrMsg);
-			sqlite3_close(database);
-			database = NULL;
+			SQLERR.Format(L"Can't create table (code : %d)", rst);
+			databaseError(SQLERR);
+			return;
 		}
 	}
 }
 
 // 210910 KBH : Insert Value in Database
-void CMainGraphDialog::insertFieldValue(CString values)
+void CMainGraphDialog::insertFieldValue(CString ct_value, CString ct_result, CString ng_value, CString ng_result)
 {
 	int rst = sqlite3_open("./testRecord.db", &database);
+	CString SQLERR;
 
 	if (rst != SQLITE_OK)
 	{
-		CString SQLERR;
-		SQLERR.Format(L"Can't open database: %s", sqlite3_errmsg(database));
-		AfxMessageBox(SQLERR);
-		sqlite3_free(szErrMsg);
-		sqlite3_close(database);
-		database = NULL;
-
+		SQLERR.Format(L"Can't open database (code : %d)", rst);
+		databaseError(SQLERR);
+		return;
 	}
 	else
 	{
-		CString sql_temp;
-		sql_temp.Format(_T("INSERT INTO History (user_id, user_name, user_age, gender, inspector, sample_type, sample_date, CTv, NGv, CT, NG) values ( %s )"), values);
+		// Info data 
+		CTime cTime;
+		CString user_id, user_name, user_age, gender, inspector, sample_type, sample_date;
+		CString datetime = systemTime.Format(L"%Y-%m-%d %H:%M:%S");
+
+		GetDlgItemText(IDC_EDIT_USER_ID, user_id);
+		GetDlgItemText(IDC_EDIT_USER_NAME, user_name);
+		GetDlgItemText(IDC_EDIT_USER_AGE, user_age);
+		GetDlgItemText(IDC_EDIT_INSPECTOR, inspector);
+		GetDlgItemText(IDC_EDIT_SAMPLE_TYPE, sample_type);
+		((CDateTimeCtrl*)GetDlgItem(IDC_DATE_SAMPLE))->GetTime(cTime);
+		sample_date = cTime.Format("%Y-%m-%d");
+		gender = ((CButton*)GetDlgItem(IDC_RADIO_GENDER_M))->GetCheck() ? L"M" : L"F";
+
+		CString cstr_sql;
+
+		// insert to history table
+		cstr_sql.Format(_T("INSERT INTO History " 
+			"(_datetime, user_id, user_name, user_age, gender, inspector, sample_type, sample_date, CTv, NGv, CT, NG) "
+			"values ( \"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\" )"), 
+			datetime, user_id, user_name, user_age, gender, inspector, sample_type, sample_date, 
+			ct_value, ng_value, ct_result, ng_result);
 
 		USES_CONVERSION;
-		const char* sql = T2A(sql_temp);
+		const char* sql_history = T2A(cstr_sql);
 
-		sqlite3_exec(database, utf8_encode(sql), NULL, NULL, &szErrMsg);
+		rst = sqlite3_exec(database, utf8_encode(sql_history), NULL, NULL, &szErrMsg);
+		
+		if (rst != SQLITE_OK)
+		{
+			SQLERR.Format(L"Failed Insert to History table (code : %d)", rst);
+			databaseError(SQLERR);
+			return;
+		}
 
 		sqlite3_close(database);
 

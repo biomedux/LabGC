@@ -129,12 +129,16 @@ private:
 	bool useCy5;
 
 	CRect m_graphRect;
+	// 230316 KBH : variable for time synchronization of log files and database data
+	CTime systemTime;
+
 	// 210910 KBH : History Database Setting
 	// SQLite 선언 
 	sqlite3* database;
 	char* szErrMsg;
+	void CMainGraphDialog::databaseError(CString SQLERR);
 	void CMainGraphDialog::initDatabaseTable();
-	void CMainGraphDialog::insertFieldValue(CString values);
+	void CMainGraphDialog::insertFieldValue(CString ct_value, CString ng_value, CString ct_result, CString  ng_result);
 public:
 	CMainGraphDialog(CWnd* pParent = nullptr);   // 표준 생성자입니다.
 	virtual ~CMainGraphDialog();
