@@ -687,14 +687,12 @@ void CMainGraphDialog::OnBnClickedButtonStart()
 	}
 	
 	// Add Confirm Dialog
+	// 230317 KBH : Change Confirm Dialog (using AfxMessageBox)
 	CString message;
 	
 	message = !isStarted ? L"프로토콜을 시작하겠습니까?" : L"프로토콜을 중지하겠습니까?";
 
-	ConfirmDialog dialog(message);
-
-
-	if (dialog.DoModal() != IDOK) {
+	if (AfxMessageBox(message, MB_YESNO | MB_ICONQUESTION) != IDYES) {
 		return;
 	}
 
