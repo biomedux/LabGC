@@ -36,3 +36,10 @@
 Debug/
 Release/
 Record/
+
+# error log file
+errorLog*
+
+# database file
+*.db
+*.data
