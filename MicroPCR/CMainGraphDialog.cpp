@@ -1867,15 +1867,23 @@ void CMainGraphDialog::initDatabaseTable()
 {
 	USES_CONVERSION;
 	sqlite3_stmt* stmt;
-	const char* sql_query;
 	CString SQLERR;
 
-	sql_query = "CREATE TABLE IF NOT EXISTS History("
+	const char* history_table_query;
+	const char* link_table_query;
+
+	history_table_query = "CREATE TABLE IF NOT EXISTS History("
 		"id integer not null primary key autoincrement,"
 		"_datetime datetime default (datetime('now', 'localtime')),"
 		"user_id text not null, user_name text not null, user_age int not null, gender text not null,"
 		"inspector text not null, sample_type text not null, sample_date date default (date('now', 'localtime')),"
 		"CTv text not null, NGv text not null, CT text not null, NG text not null);";
+
+	link_table_query = "CREATE TABLE IF NOT EXISTS Link("
+		"id integer not null primary key autoincrement,"
+		"_datetime datetime default (datetime('now', 'localtime')),"
+		"file_name text not null);";
+
 	// check if database file exists
 	int rst = sqlite3_open("./testRecord.db", &database);
 
@@ -1888,10 +1896,20 @@ void CMainGraphDialog::initDatabaseTable()
 	}
 	else
 	{
-		rst = sqlite3_exec(database, sql_query, NULL, NULL, &szErrMsg);
+		// create History table
+		rst = sqlite3_exec(database, history_table_query, NULL, NULL, &szErrMsg);
 		if (rst != SQLITE_OK)
 		{
-			SQLERR.Format(L"Can't create table (code : %d)", rst);
+			SQLERR.Format(L"Can't create History table (code : %d)", rst);
+			databaseError(SQLERR);
+			return;
+		}
+
+		// create Link table
+		rst = sqlite3_exec(database, link_table_query, NULL, NULL, &szErrMsg);
+		if (rst != SQLITE_OK)
+		{
+			SQLERR.Format(L"Can't create Link table (code : %d)", rst);
 			databaseError(SQLERR);
 			return;
 		}
@@ -1914,8 +1932,10 @@ void CMainGraphDialog::insertFieldValue(CString ct_value, CString ct_result, CSt
 	{
 		// Info data 
 		CTime cTime;
-		CString user_id, user_name, user_age, gender, inspector, sample_type, sample_date;
+		CString user_id, user_name, user_age, gender, inspector, sample_type, sample_date, file_name;
 		CString datetime = systemTime.Format(L"%Y-%m-%d %H:%M:%S");
+		long serialNumber = magneto->getSerialNumber();
+		file_name.Format(L"log%06ld-pd%s.txt", serialNumber, systemTime.Format(L"%Y%m%d-%H%M-%S"));
 
 		GetDlgItemText(IDC_EDIT_USER_ID, user_id);
 		GetDlgItemText(IDC_EDIT_USER_NAME, user_name);
@@ -1947,6 +1967,17 @@ void CMainGraphDialog::insertFieldValue(CString ct_value, CString ct_result, CSt
 			return;
 		}
 
+		// insert to Link table
+		cstr_sql.Format(_T("INSERT INTO Link (_datetime, file_name) values ( \"%s\",\"%s\" )"), datetime, file_name);
+		const char* sql_link = T2A(cstr_sql);
+
+		rst = sqlite3_exec(database, utf8_encode(sql_link), NULL, NULL, &szErrMsg);
+		if (rst != SQLITE_OK)
+		{
+			SQLERR.Format(L"Failed Insert to Link table (code : %d)", rst);
+			databaseError(SQLERR);
+			return;
+		}
 		sqlite3_close(database);
 
 	}
