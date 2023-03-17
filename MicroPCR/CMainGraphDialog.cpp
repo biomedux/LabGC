@@ -1639,10 +1639,12 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 	if (idx >= 11) {
 		// BaseMean value
 		float baseMean = 0.0;
-		for (int i = 1; i < 11; ++i) {
+
+		// 230202 KBH Change baseMean calculation range (1 ~ 11 -> 4 ~ 16)
+		for (int i = 4; i < 16; ++i) {
 			baseMean += sensorValue[i];
 		}
-		baseMean /= 10.;
+		baseMean /= 12.;
 
 		float threshold = 0.697 * flRelativeMax / 10.;
 		float logThreshold = log(threshold);
@@ -1677,11 +1679,13 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 			ct = cpos - (cval - logThreshold) / delta;
 			ctText.Format(L"%.2f", ct);
 
-			if (resultRange[filterIndex] <= ct) {
-				result = L"Negative";
+			if (ct >= 16 && ct <= 40)
+			{
+				result = resultRange[filterIndex] <= ct ? L"Negative" : L"Positive";
 			}
-			else {
-				result = L"Positive";
+			else // Error
+			{
+				result = L"Error";
 			}
 
 			// Setting the CT text
