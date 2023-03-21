@@ -1382,7 +1382,7 @@ void CMainGraphDialog::PCREndTask() {
 			GetDlgItem(IDC_CUSTOM_RESULT_TABLE)->GetWindowRect(&table_rect);
 			InvalidateRect(&table_rect);
 
-			insertFieldValue(ct_value, ng_value, ct_result, ng_result);
+			insertFieldValue(ct_value, ct_result, ng_value, ng_result);
 			AfxMessageBox(L"PCR ended!!");
 		}
 		else AfxMessageBox(L"PCR incomplete!!");
@@ -1890,7 +1890,6 @@ void CMainGraphDialog::initDatabaseTable()
 		SQLERR.Format(L"Can't open database (code : %d)", rst);
 		databaseError(SQLERR);
 		return;
-
 	}
 	else
 	{
@@ -1952,6 +1951,7 @@ void CMainGraphDialog::insertFieldValue(CString ct_value, CString ct_result, CSt
 			"values ( \"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\" )"), 
 			datetime, user_id, user_name, user_age, gender, inspector, sample_type, sample_date, 
 			ct_value, ng_value, ct_result, ng_result);
+		
 
 		USES_CONVERSION;
 		const char* sql_history = T2A(cstr_sql);
