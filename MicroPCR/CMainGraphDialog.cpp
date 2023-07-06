@@ -1616,20 +1616,33 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 	CString ctText = L"";
 	CString filterLabel[4] = { currentProtocol.labelFam, currentProtocol.labelHex, currentProtocol.labelRox, currentProtocol.labelCY5 };
 
-	// ignore the data when the data is over the 10
+	// ignore the data when the data is under the 15
 	int idx = sensorValue.size();
 
-	// If the idx is under the 10, fail
-	if (idx >= 11) {
-		// BaseMean value
-		float baseMean = 0.0;
-
-		// 230202 KBH Change baseMean calculation range (1 ~ 11 -> 4 ~ 16)
-		for (int i = 4; i < 16; ++i) {
-			baseMean += sensorValue[i];
+	// If the idx is under the 14, fail
+	if (idx >= 15) {
+		float bs = 4, be = 16;//cycle 4~15 date에 line fitting
+		double xm = 0, ym = 0, sxx = 0, syy = 0, sxy = 0, a = 0, b = 0;
+		for (int x = bs; x < be; x++) {
+			double y = sensorValue[x];
+			xm += x;
+			ym += y;
+			sxx += x * x;
+			syy += y * y;
+			sxy += x * y;
 		}
-		baseMean /= 12.;
-
+		double nos = be - bs;
+		xm = xm / nos;
+		ym = ym / nos;
+		sxx = sxx / nos - xm * xm;
+		syy = syy / nos - ym * ym;
+		sxy = sxy / nos - xm * ym;
+		a = sxy / sxx;
+		b = ym - a * xm;
+		float baseline[60];
+		for (int x = 0; x < idx; x++) { 
+			baseline[x] = a * x + b;
+		}
 		float threshold = 0.697 * flRelativeMax / 10.;
 		float logThreshold = log(threshold);
 		float ct;
@@ -1642,34 +1655,32 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 			logThreshold = tempLogThreshold;
 		}
 
-		for (int i = 0; i < sensorValue.size(); ++i) {
-			if (log(sensorValue[i] - baseMean) > logThreshold) {
+		// 230706 KBH start index change (i = 11 -> i = 15)
+		for (int i = 15; i < sensorValue.size(); ++i) {
+			if (log(sensorValue[i] - baseline[i]) > logThreshold) {
 				idx = i;
 				break;
 			}
 		}
 
 		if (idx >= sensorValue.size() || idx <= 0) {
-			// 210910 KBH : Change "Not detected" to "Negative"
-			//result = L"Not detected"; 
+			// 210714 KBH Change "Not detected" to "Negative"
+			//result = L"Not detected";
 			result = L"Negative";
 		}
 		else {
 			double resultRange[4] = { currentProtocol.ctFam, currentProtocol.ctHex, currentProtocol.ctRox, currentProtocol.ctCY5 };
-
-			float cpos = idx + 1;
-			float cval = log(sensorValue[idx] - baseMean);
-			float delta = cval - log(sensorValue[idx - 1] - baseMean);
+			float cpos = idx; // 220216 KBH The starting index of sensorValue is 1
+			float cval = log(sensorValue[idx] - baseline[idx]);
+			float delta = cval - log(sensorValue[idx - 1] - baseline[idx - 1]);
 			ct = cpos - (cval - logThreshold) / delta;
 			ctText.Format(L"%.2f", ct);
 
-			if (ct >= 16 && ct <= 40)
-			{
-				result = resultRange[filterIndex] <= ct ? L"Negative" : L"Positive";
+			if (resultRange[filterIndex] <= ct) {
+				result = L"Negative";
 			}
-			else // Error
-			{
-				result = L"Error";
+			else {
+				result = L"Positive";
 			}
 
 			// Setting the CT text
@@ -1697,8 +1708,7 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 	resultTable.SetItem(&item);
 
 	// 210910 KBH : return ctText and result (database)
-	val = ctText;
-	rst = result;
+	val = ctText; rst = result;
 }
 
 // 200804 KBH change log file name 
