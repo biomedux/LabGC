@@ -1376,11 +1376,8 @@ void CMainGraphDialog::PCREndTask() {
 				setCTValue(dateTime, sensorValuesCy5, resultIndex++, 3, dummy, dummy);
 			}
 			
-			// 210913 KBH get result table rect
-			//InvalidateRect(&CRect(226, 655, 456, 768));
-			CRect table_rect;
-			GetDlgItem(IDC_CUSTOM_RESULT_TABLE)->GetWindowRect(&table_rect);
-			InvalidateRect(&table_rect);
+			// KBH230706 replace InvalidateRect function to RedrawWindow function
+			RedrawWindow();
 
 			insertFieldValue(ct_value, ct_result, ng_value, ng_result);
 			AfxMessageBox(L"PCR ended!!");
