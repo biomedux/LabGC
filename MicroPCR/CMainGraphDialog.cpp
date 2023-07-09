@@ -1286,15 +1286,16 @@ void CMainGraphDialog::cleanupTask() {
 	// 210120 KBH Magneto AlarmReset
 	magneto->Alarmreset();	
 
+	// 230105 KBH : remove magneto homing after PCR protocol is over
 	// Start cleanup timer
 	// Setting the home command
-	CString magnetoProtocolRes = magneto->loadProtocolFromData(L"home");
-
-	if (magneto->isCompileSuccess(magnetoProtocolRes)) {
-		// initialize the protocol
-		vector<ActionBeans> treeList;
-		magneto->generateActionList(treeList);
-	}
+	// CString magnetoProtocolRes = magneto->loadProtocolFromData(L"home");
+	// 
+	// if (magneto->isCompileSuccess(magnetoProtocolRes)) {
+	// 	// initialize the protocol
+	// 	vector<ActionBeans> treeList;
+	// 	magneto->generateActionList(treeList);
+	// }
 
 	magneto->start();
 	SetTimer(Magneto::TimerCleanupTaskID, Magneto::TimerCleanupTaskDuration, NULL);
