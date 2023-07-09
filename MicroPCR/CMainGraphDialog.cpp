@@ -1416,155 +1416,62 @@ void CMainGraphDialog::setChartValue() {
 		double* dataHex = new double[sensorValuesHex.size() * 2];
 		double* dataRox = new double[sensorValuesRox.size() * 2];
 		double* dataCy5 = new double[sensorValuesCy5.size() * 2];
-
 		vector<double> copySensorValuesFam, copySensorValuesHex, copySensorValuesRox, copySensorValuesCy5;
-		double meanFam = 0.0, meanHex = 0.0, meanRox = 0.0, meanCy5 = 0.0;
+
+		bool* useColors = new bool[4]{ useFam, useHex, useRox, useCy5 };
+		double** datas = new double* [4]{ dataFam, dataHex, dataRox, dataCy5 }; // 
+		vector<double>* sensorValues = new vector<double>[4]{ sensorValuesFam, sensorValuesHex, sensorValuesRox, sensorValuesCy5 };
+		vector<double>* copySensorValues = new vector<double>[4]{ copySensorValuesFam, copySensorValuesHex, copySensorValuesRox, copySensorValuesCy5 };
+		COLORREF* colors = new COLORREF[4]{ RGB(0, 0, 255),  RGB(0, 255, 0), RGB(0, 128, 0), RGB(255, 0, 0) };
 
 		int maxY = 0;
 
-		if (useFam)
-		{
-			// Calculate the mean value first
-			if (sensorValuesFam.size() >= 11) {
-				double sum = std::accumulate(sensorValuesFam.begin()+1, sensorValuesFam.begin() + 11, 0.0);
-				meanFam = sum / 10;
+		for (int idx = 0; idx < 4; idx++) {
+			if (!useColors[idx]) continue;
+			double* targetData = datas[idx];
+			COLORREF color = colors[idx];
+			vector<double> values = sensorValues[idx];
+			vector<double> copyValues = copySensorValues[idx];
+			double meanValues = 0.0;
+			if (values.size() < 16) {
+				double sumValues = std::accumulate(values.begin(), values.end(), 0.0);
+				meanValues = sumValues / values.size();
+
+				for (int x = 0; x < values.size(); x++) {
+					copyValues.push_back(values[x] - meanValues);
+				}
 			}
 			else {
-				double sum = std::accumulate(sensorValuesFam.begin(), sensorValuesFam.end(), 0.0);
-				meanFam = sum / sensorValuesFam.size();
-			}
-
-			// Copy data
-			for (int i = 0; i < sensorValuesFam.size(); ++i) {
-				if (i >= 1) {
-					copySensorValuesFam.push_back(sensorValuesFam[i] - meanFam);
+				float bs = 4, be = 16;// line fitting at cycle 4~15 data
+				double xm = 0, ym = 0, sxx = 0, syy = 0, sxy = 0, a = 0, b = 0;
+				for (int x = bs; x < be; x++) {
+					double y = values[x];
+					xm += x;
+					ym += y;
+					sxx += x * x;
+					sxy += x * y;
 				}
-				else {
-					copySensorValuesFam.push_back(sensorValuesFam[i]);
-				}
-			}
+				double nos = be - bs;
+				xm = xm / nos;
+				ym = ym / nos;
+				sxx = sxx / nos - xm * xm;
+				sxy = sxy / nos - xm * ym;
+				a = sxy / sxx;
+				b = ym - a * xm;
 
-			int	nDims_fam = 2, dims_fam[2] = { 2, copySensorValuesFam.size() };
-			for (int i = 0; i < copySensorValuesFam.size(); ++i)
-			{
-				dataFam[i] = i;
-				dataFam[i + copySensorValuesFam.size()] = copySensorValuesFam[i];
-			}
-			m_Chart.SetDataColor(m_Chart.AddData(dataFam, nDims_fam, dims_fam), RGB(0, 0, 255));
-
-			int tempMax = *max_element(copySensorValuesFam.begin(), copySensorValuesFam.end());
-
-			if (maxY < tempMax) {
-				maxY = tempMax;
-			}
-		}
-
-		if (useHex)
-		{
-			// Calculate the mean value first
-			if (sensorValuesHex.size() >= 11) {
-				double sum = std::accumulate(sensorValuesHex.begin()+1, sensorValuesHex.begin() + 11, 0.0);
-				meanHex = sum / 10;
-			}
-			else {
-				double sum = std::accumulate(sensorValuesHex.begin(), sensorValuesHex.end(), 0.0);
-				meanHex = sum / sensorValuesHex.size();
-			}
-
-			// Copy data
-			for (int i = 0; i < sensorValuesHex.size(); ++i) {
-				if (i >= 1) {
-					copySensorValuesHex.push_back(sensorValuesHex[i] - meanHex);
-				}
-				else {
-					copySensorValuesHex.push_back(sensorValuesHex[i]);
+				for (int x = 0; x < values.size(); x++) { //sensorValue size = idx
+					copyValues.push_back(values[x] -(a * x + b));
 				}
 			}
-
-			int	nDims_hex = 2, dims_hex[2] = { 2, copySensorValuesHex.size() };
-			for (int i = 0; i < copySensorValuesHex.size(); ++i)
-			{
-				dataHex[i] = i;
-				dataHex[i + copySensorValuesHex.size()] = copySensorValuesHex[i];
+			int nDims = 2, dims[2] = { 2, copyValues.size() };
+			for (int x = 0; x < copyValues.size(); x++) {
+				targetData[x] = x;
+				targetData[x + copyValues.size()] = copyValues[x];
 			}
-			m_Chart.SetDataColor(m_Chart.AddData(dataHex, nDims_hex, dims_hex), RGB(0, 255, 0));
+			m_Chart.SetDataColor(m_Chart.AddData(targetData, nDims, dims), color);
 
-			int tempMax = *max_element(copySensorValuesHex.begin(), copySensorValuesHex.end());
-
-			if (maxY < tempMax) {
-				maxY = tempMax;
-			}
-		}
-
-		if (useRox)
-		{
-			// Calculate the mean value first
-			if (sensorValuesRox.size() >= 11) {
-				double sum = std::accumulate(sensorValuesRox.begin()+1, sensorValuesRox.begin() + 11, 0.0);
-				meanRox = sum / 10;
-			}
-			else {
-				double sum = std::accumulate(sensorValuesRox.begin(), sensorValuesRox.end(), 0.0);
-				meanRox = sum / sensorValuesRox.size();
-			}
-
-			// Copy data
-			for (int i = 0; i < sensorValuesRox.size(); ++i) {
-				if (i >= 1) {
-					copySensorValuesRox.push_back(sensorValuesRox[i] - meanRox);
-				}
-				else {
-					copySensorValuesRox.push_back(sensorValuesRox[i]);
-				}
-			}
-
-			int	nDims_rox = 2, dims_rox[2] = { 2, copySensorValuesRox.size() };
-			for (int i = 0; i < copySensorValuesRox.size(); ++i)
-			{
-				dataRox[i] = i;
-				dataRox[i + copySensorValuesRox.size()] = copySensorValuesRox[i];
-			}
-			m_Chart.SetDataColor(m_Chart.AddData(dataRox, nDims_rox, dims_rox), RGB(0, 128, 0));
-
-			int tempMax = *max_element(copySensorValuesRox.begin(), copySensorValuesRox.end());
-
-			if (maxY < tempMax) {
-				maxY = tempMax;
-			}
-		}
-
-		if (useCy5)
-		{
-			// Calculate the mean value first
-			if (sensorValuesCy5.size() >= 11) {
-				double sum = std::accumulate(sensorValuesCy5.begin()+1, sensorValuesCy5.begin() + 11, 0.0);
-				meanCy5 = sum / 10;
-			}
-			else {
-				double sum = std::accumulate(sensorValuesCy5.begin(), sensorValuesCy5.end(), 0.0);
-				meanCy5 = sum / sensorValuesCy5.size();
-			}
-
-			// Copy data
-			for (int i = 0; i < sensorValuesCy5.size(); ++i) {
-				if (i >= 1) {
-					copySensorValuesCy5.push_back(sensorValuesCy5[i] - meanCy5);
-				}
-				else {
-					copySensorValuesCy5.push_back(sensorValuesCy5[i]);
-				}
-			}
-
-			int	nDims_cy5 = 2, dims_cy5[2] = { 2, copySensorValuesCy5.size() };
-			for (int i = 0; i < copySensorValuesCy5.size(); ++i)
-			{
-				dataCy5[i] = i;
-				dataCy5[i + copySensorValuesCy5.size()] = copySensorValuesCy5[i];
-			}
-			m_Chart.SetDataColor(m_Chart.AddData(dataCy5, nDims_cy5, dims_cy5), RGB(255, 0, 0));
-
-			int tempMax = *max_element(copySensorValuesCy5.begin(), copySensorValuesCy5.end());
-
+			int tempMax = *max_element(copyValues.begin(), copyValues.end());
+			
 			if (maxY < tempMax) {
 				maxY = tempMax;
 			}
@@ -1628,14 +1535,12 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 			xm += x;
 			ym += y;
 			sxx += x * x;
-			syy += y * y;
 			sxy += x * y;
 		}
 		double nos = be - bs;
 		xm = xm / nos;
 		ym = ym / nos;
 		sxx = sxx / nos - xm * xm;
-		syy = syy / nos - ym * ym;
 		sxy = sxy / nos - xm * ym;
 		a = sxy / sxx;
 		b = ym - a * xm;
