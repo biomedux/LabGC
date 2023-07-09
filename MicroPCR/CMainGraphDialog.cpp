@@ -1581,11 +1581,11 @@ void CMainGraphDialog::setCTValue(CString dateTime, vector<double>& sensorValue,
 			ct = cpos - (cval - logThreshold) / delta;
 			ctText.Format(L"%.2f", ct);
 
-			if (resultRange[filterIndex] <= ct) {
-				result = L"Negative";
+			if (16 <= ct && ct >= maxCycles) {
+				result = resultRange[filterIndex] <= ct ? L"Negative" : L"Positive";
 			}
 			else {
-				result = L"Positive";
+				result = L"Error";
 			}
 
 			// Setting the CT text
