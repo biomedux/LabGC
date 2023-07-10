@@ -845,16 +845,16 @@ void CMainGraphDialog::OnTimer(UINT_PTR nIDEvent)
 		}
 	}
 	else if (nIDEvent == Magneto::TimerCleanupTaskID) {
-		if (!magneto->runTask()) {
-			KillTimer(Magneto::TimerRuntaskID);
-			// 210119 KBH remove unused code 
-			//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
+		//if (!magneto->runTask()) {
+		//	KillTimer(Magneto::TimerRuntaskID);
+		//	// 210119 KBH remove unused code 
+		//	//AfxMessageBox(L"Limit 스위치가 설정되어 task 가 종료되었습니다.\n기기를 확인하세요.");
 
-			// 210119 KBH Motor Stucked
-			AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
-			initState();
-			return;
-		}
+		//	// 210119 KBH Motor Stucked
+		//	AfxMessageBox(L"motor가 stuck 되었습니다.\n기기를 확인하세요.");
+		//	initState();
+		//	return;
+		//}
 
 		if (magneto->isIdle()) {
 			KillTimer(Magneto::TimerCleanupTaskID);
@@ -1297,7 +1297,7 @@ void CMainGraphDialog::cleanupTask() {
 	// 	magneto->generateActionList(treeList);
 	// }
 
-	magneto->start();
+	// magneto->start();
 	SetTimer(Magneto::TimerCleanupTaskID, Magneto::TimerCleanupTaskDuration, NULL);
 }
 
