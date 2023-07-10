@@ -664,10 +664,12 @@ void CMainGraphDialog::OnBnClickedButtonConnect()
 
 		device->CloseDevice();
 
-		CString prevTitle;
-		GetWindowText(prevTitle);
-		CString left = prevTitle.Left(prevTitle.Find(L")") + 1);
-		SetWindowText(left);
+		// 230710 KBH removed version in title
+		//CString prevTitle;
+		//GetWindowText(prevTitle);
+		//CString left = prevTitle.Left(prevTitle.Find(L")") + 1);
+		//SetWindowText(left);
+		SetWindowText(L"LabGenius");
 
 		SetDlgItemText(IDC_EDIT_CONNECTI_STATUS, L"Disconnected");
 		SetDlgItemText(IDC_BUTTON_CONNECT, L"Connect");
